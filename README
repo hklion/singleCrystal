@@ -1,0 +1,3 @@
+Requires GEANT4 and cmake. To generate makefile:
+
+cmake -DGeant4_DIR=/path/to/GEANT4/ /path/to/singleCrystal

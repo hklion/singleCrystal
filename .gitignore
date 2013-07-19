@@ -1,0 +1,7 @@
+*.log
+*.err
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+G4History.macro
+Makefile
