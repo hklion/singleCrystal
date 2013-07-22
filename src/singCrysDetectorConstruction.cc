@@ -138,7 +138,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   G4double crysSideLength = 3*cm;
   G4double crysSizeZ = 11*cm;
-  G4int crysNumSides = 6;
+  G4int crysNumSides = 4;
   // Parameters for APD
   G4double siliconXY = 10*mm;
   G4double siliconZ = 0.1*mm;
@@ -268,8 +268,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   logicSilicon->SetSensitiveDetector(SiliconSD);
   
   // Place epoxy and silicon in casing.
-  G4double epoxyPlaceZ = 0.5 * (casingZ - epoxyZ);
-  G4double siliconPlaceZ = 0.5 * (casingZ - siliconZ) - epoxyZ;
+  G4double epoxyPlaceZ = -0.5 * (casingZ - epoxyZ);
+  G4double siliconPlaceZ = -(0.5 * (casingZ - siliconZ) - epoxyZ);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm ,0.4*mm, epoxyPlaceZ),
                     logicEpoxy,
@@ -288,8 +288,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     checkOverlaps);
 
   // Place casing and mounting in APD
-  G4double mountingPlaceZ = 0.5 * (APDZ - mountingZ);
-  G4double casingPlaceZ = 0.5 * (casingZ - APDZ);
+  G4double mountingPlaceZ = -0.5 * (APDZ - mountingZ);
+  G4double casingPlaceZ = -0.5 * (casingZ - APDZ);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, mountingPlaceZ),
                     logicMounting,
@@ -308,7 +308,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     checkOverlaps);
 
   // Place APD
-  G4double APDZPlacement = -0.5 * (crysSizeZ + APDZ);
+  G4double APDZPlacement = 0.5 * (crysSizeZ + APDZ);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0*cm, 0.0*cm, APDZPlacement),
                     logicAPD,
