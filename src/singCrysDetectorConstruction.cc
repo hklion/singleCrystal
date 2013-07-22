@@ -10,6 +10,10 @@
 #include "G4SystemOfUnits.hh"
 #include "singCrysTrackerSD.hh"
 #include "G4UserLimits.hh"
+#include "G4MultiFunctionalDetector.hh"
+#include "G4VPrimitiveScorer.hh"
+#include "G4PSFlatSurfaceCurrent.hh"
+#include "G4PSEnergyDeposit.hh"
 
 // Constructor: define materials
 singCrysDetectorConstruction::singCrysDetectorConstruction()
@@ -260,12 +264,19 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                        mountingMat,
                                                        "Mounting");
   
-  // Add sensitive detector
-  G4String siliconAPDSDname = "singCrys/SiliconAPDSD";
-  singCrysTrackerSD* SiliconSD = new singCrysTrackerSD(siliconAPDSDname,
-                                                  "SiliconHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(SiliconSD);
-  logicSilicon->SetSensitiveDetector(SiliconSD);
+  // Add multifunctional detector and scorers
+  G4String siliconAPDname = "singCrys/SiliconAPD";
+  G4MultiFunctionalDetector* SiliconMFD = 
+    new G4MultiFunctionalDetector(siliconAPDname);
+  // Add scorers
+  G4VPrimitiveScorer* primitive;
+  primitive = new G4PSEnergyDeposit("eDep");
+  SiliconMFD->ReigsterPrimitive(primitive);
+  primitive = new G4PSFlatSurfaceCurrent("FSC");
+  SiliconMFD->RegisterPrimitive(primitive);
+  // Assign detector to silicon logical volume
+  G4SDManager::GetSDMpointer()->AddNewDetector(SiliconMFD);
+  logicSilicon->SetSensitiveDetector(SiliconMFD);
   
   // Place epoxy and silicon in casing.
   G4double epoxyPlaceZ = -0.5 * (casingZ - epoxyZ);
