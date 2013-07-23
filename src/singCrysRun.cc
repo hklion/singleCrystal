@@ -30,12 +30,27 @@ void singCrysRun::RecordEvent(const G4Event* evt)
 
 void singCrysRun::printEDepHits()
 {
-  G4double value = *(totalEDep[0]);
-  G4cout << "edep: " << value / MeV << " MeV" << G4endl;
+  G4cout << &totalEDep << " " << totalEDep[0] << G4endl;
+  if (totalEDep.entries())
+  {
+    G4double value  = *(totalEDep[0]);
+    G4cout << "edep: " << value / keV << " keV" << G4endl;
+  }
+  else
+  {
+    G4cout << "No energy deposition hits." << G4endl;
+  }
 }
 
 void singCrysRun::printSurfCurrHits()
 {
-  G4double value =  *(totalSurfCurr[0]);
-  G4cout << "flux: " << value << "/mm2" << G4endl;
+  if (totalSurfCurr.entries())
+  {
+    G4double value = *(totalSurfCurr[0]);
+    G4cout << "surface current: " << value << "/mm2" << G4endl;
+  }
+  else
+  {
+    G4cout << "No current hits." << G4endl;
+  }
 }
