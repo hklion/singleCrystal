@@ -13,6 +13,7 @@
 #include "singCrysDetectorConstruction.hh"
 #include "singCrysPhysicsList.hh"
 #include "singCrysPrimaryGeneratorAction.hh"
+#include "singCrysRunAction.hh"
 
 #include "G4StepLimiterBuilder.hh"
 #include "G4VModularPhysicsList.hh"
@@ -35,6 +36,9 @@ int main(int argc, char** argv)
 
   // Add manatory user action class
   runManager->SetUserAction(new singCrysPrimaryGeneratorAction());
+
+  // Add optional run action class
+  runManager->SetUserAction(new singCrysRunAction());
 
   // Initialize kernel
   runManager->Initialize();

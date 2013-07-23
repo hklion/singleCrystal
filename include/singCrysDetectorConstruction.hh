@@ -23,7 +23,7 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
     G4MaterialPropertiesTable* generateRIndexTable(G4double rindex);
     G4MaterialPropertiesTable* generateSiTable();
 
-    G4UserLimits* fStepLimit;
+    G4UserLimits* fLimit;
 };
 
 #endif
