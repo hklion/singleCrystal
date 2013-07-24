@@ -13,9 +13,7 @@
 #include "G4OpAbsorption.hh"
 #include "G4OpRayleigh.hh"
 #include "G4OpBoundaryProcess.hh"
-#include "G4StepLimiterBuilder.hh"
 #include "G4UserSpecialCuts.hh"
-#include "G4StepLimiter.hh"
 
 #include "G4LossTableManager.hh"
 #include "G4EmSaturation.hh"
@@ -146,6 +144,7 @@ void singCrysPhysicsList::ConstructGeneral()
 #include "G4MuIonisation.hh"
 #include "G4MuBremsstrahlung.hh"
 #include "G4MuPairProduction.hh"
+#include "G4MuonMinusCaptureAtRest.hh"
 
 #include "G4hIonisation.hh"
 
@@ -188,6 +187,8 @@ void singCrysPhysicsList::ConstructEM()
      pmanager->AddProcess(new G4MuIonisation(),      -1, 2, 2);
      pmanager->AddProcess(new G4MuBremsstrahlung(),  -1, 3, 3);
      pmanager->AddProcess(new G4MuPairProduction(),  -1, 4, 4);
+     pmanager->AddRestProcess(new G4MuonMinusCaptureAtRest);
+
     }
     else
     {
@@ -212,7 +213,6 @@ void singCrysPhysicsList::ConstructOp()
 //  theMieHGScatteringProcess    = new G4OpMieHG();
   theBoundaryProcess           = new G4OpBoundaryProcess();
   theSpecialCutsProcess        = new G4UserSpecialCuts();
-  theStepLimitProcess          = new G4StepLimiter();
 
   SetVerbose(0);
 
@@ -252,7 +252,6 @@ void singCrysPhysicsList::ConstructOp()
 //      pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
       pmanager->AddDiscreteProcess(theBoundaryProcess);
       pmanager->AddDiscreteProcess(theSpecialCutsProcess);
-      pmanager->AddDiscreteProcess(theStepLimitProcess);
     }
   }
 }
@@ -267,7 +266,6 @@ void singCrysPhysicsList::SetVerbose(G4int verbose)
 //  theMieHGScatteringProcess->SetVerboseLevel(verbose);
   theBoundaryProcess->SetVerboseLevel(verbose);
   theSpecialCutsProcess->SetVerboseLevel(verbose);
-  theStepLimitProcess->SetVerboseLevel(verbose);
 }
 
 void singCrysPhysicsList::SetCuts()

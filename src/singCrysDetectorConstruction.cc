@@ -353,11 +353,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     false,
                     0,
                     checkOverlaps);
-  // Set step and energy limits. If particle below energy limit, track is
-  // killed and energy is deposited. Step limit ensure sa step is taken in
-  // the silicon.
-  G4double maxStep = 0.5*siliconZ;
-  fLimit = new G4UserLimits(maxStep, DBL_MAX, DBL_MAX, 10*eV);
+  // Set energy limits. If particle below energy limit, track is
+  // killed and energy is deposited.
+  fLimit = new G4UserLimits(DBL_MAX, DBL_MAX, DBL_MAX, 10*eV);
   logicSilicon->SetUserLimits(fLimit);
  
   return physWorld;

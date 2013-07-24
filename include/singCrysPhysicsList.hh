@@ -14,7 +14,6 @@ class G4OpRayleigh;
 //class G4OpMieHG;
 class G4OpBoundaryProcess;
 class G4UserSpecialCuts;
-class G4StepLimiter;
 
 class singCrysPhysicsList: public G4VUserPhysicsList
 {
@@ -39,14 +38,13 @@ class singCrysPhysicsList: public G4VUserPhysicsList
 
   private:
     // Pointers to the various processes
-    G4Cerenkov*          theCerenkovProcess;
-    G4Scintillation*     theScintillationProcess;
-    G4OpAbsorption*      theAbsorptionProcess;
-    G4OpRayleigh*        theRayleighScatteringProcess;
-//    G4OpMieHG*           theMieHGScatteringProcess;
-    G4OpBoundaryProcess* theBoundaryProcess;
-    G4UserSpecialCuts*   theSpecialCutsProcess;
-    G4StepLimiter*       theStepLimitProcess;
+    G4Cerenkov*             theCerenkovProcess;
+    G4Scintillation*        theScintillationProcess;
+    G4OpAbsorption*         theAbsorptionProcess;
+    G4OpRayleigh*           theRayleighScatteringProcess;
+//    G4OpMieHG*            theMieHGScatteringProcess;
+    G4OpBoundaryProcess*    theBoundaryProcess;
+    G4UserSpecialCuts*      theSpecialCutsProcess;
 };
 
 #endif
