@@ -5,6 +5,7 @@
 #include "G4SDManager.hh"
 #include "G4ios.hh"
 
+// Constructor
 singCrysTrackerSD::singCrysTrackerSD(const G4String& name,
                                      const G4String& hitsCollectionName)
   : G4VSensitiveDetector(name),
@@ -13,9 +14,11 @@ singCrysTrackerSD::singCrysTrackerSD(const G4String& name,
   collectionName.insert(hitsCollectionName);
 }
 
+// Destructor
 singCrysTrackerSD::~singCrysTrackerSD()
 {}
 
+// Initializes the hits collection associated with the detector
 void singCrysTrackerSD::Initialize(G4HCofThisEvent* hce)
 {
   // Create hits collection
@@ -28,6 +31,7 @@ void singCrysTrackerSD::Initialize(G4HCofThisEvent* hce)
   hce->AddHitsCollection(hcID, fHitsCollection);
 }
 
+// Processes the hits in the volume
 G4bool singCrysTrackerSD::ProcessHits(G4Step* aStep,
                                       G4TouchableHistory*)
 {
@@ -46,6 +50,7 @@ G4bool singCrysTrackerSD::ProcessHits(G4Step* aStep,
   return true;
 }
 
+// Outputs information about the event
 void singCrysTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
   if (verboseLevel > 1)

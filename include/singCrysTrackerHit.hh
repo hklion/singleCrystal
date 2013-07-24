@@ -1,3 +1,8 @@
+// Tracker hit class.
+//
+// Defines data members to store trackID, APDNb, energy deposit and position
+// of particles in a selected volume
+
 #ifndef singCrysTrackerHit_h
 #define singCrysTrackerHit_h 1
 
@@ -5,11 +10,6 @@
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4ThreeVector.hh"
-
-// Tracker hit class.
-//
-// Defines data members to store trackID, APDNb, energy deposit and position
-// of particles in a selected volume
 
 class singCrysTrackerHit : public G4VHit
 {

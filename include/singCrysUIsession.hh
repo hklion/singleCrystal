@@ -1,3 +1,5 @@
+// Class to output G4cout and G4cerr to file
+
 #ifndef singCrysUIsession_h
 #define singCrysUIsession_h 1
 

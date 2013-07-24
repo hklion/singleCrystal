@@ -1,3 +1,5 @@
+// Mandatory user action class. Generates a specified partcle at a specified
+// energy.
 #ifndef singCrysPrimaryGeneratorAction_h
 #define singCrysPrimaryGeneratorAction_h
 

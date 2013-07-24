@@ -1,3 +1,6 @@
+// Physics list for the simulation of optical photons in a crystal. Also
+// includes processes so that the particle's step length and energy can be
+// limited.
 #ifndef singCrysPhysicsList_h
 #define singCrysPhysicsList_h 1
 
@@ -35,6 +38,7 @@ class singCrysPhysicsList: public G4VUserPhysicsList
     void SetVerbose(G4int verbose);
 
   private:
+    // Pointers to the various processes
     G4Cerenkov*          theCerenkovProcess;
     G4Scintillation*     theScintillationProcess;
     G4OpAbsorption*      theAbsorptionProcess;

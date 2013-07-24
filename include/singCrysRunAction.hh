@@ -1,3 +1,5 @@
+// User-defined run action class. Allows for information from the scorer to be
+// dumped.
 #ifndef singCrysRunAction_h
 #define singCrysRunAction_h 1
 

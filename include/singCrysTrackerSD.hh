@@ -1,3 +1,5 @@
+// User-defined sensitive detector class
+
 #ifndef singCrysTrackerSD_h
 #define singCrysTrackerSD_h 1
 
@@ -7,9 +9,6 @@
 
 class G4Step;
 class G4HCofThisEvent;
-
-// singCrysTracker sensitive detector class
-
 
 class singCrysTrackerSD : public G4VSensitiveDetector
 {

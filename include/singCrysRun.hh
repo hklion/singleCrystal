@@ -1,3 +1,5 @@
+// User-defined run action class. Stores scores for energy deposition and
+// current through the APD. Also contains methods to output data.
 #ifndef singCrysRun_h
 #define singCrysRun_h 1
 
