@@ -1,5 +1,7 @@
 *.log
 *.err
+*.root
+*.swp
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake

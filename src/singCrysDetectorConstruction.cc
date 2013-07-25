@@ -86,7 +86,6 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
   G4double Rayleigh[nEntries] = 
       {260*cm, 260*cm, 260*cm, 260*cm, 260*cm, 260*cm, 260*cm};
 
-  // TODO: Get actual values!
   const G4int nEntriesScint = 11;
   G4double ScintilPhotonEnergy[nEntriesScint] = 
     {2.138*eV, 2.214*eV, 2.296*eV, 2.385*eV, 2.480*eV, 2.583*eV, 2.696*eV,
@@ -161,9 +160,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4NistManager* nist = G4NistManager::Instance();
 
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
-  G4double crysSideLength = 3*cm;
+  G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
   G4double crysSizeZ = 11*cm;
-  G4int crysNumSides = 4;
+  G4int crysNumSides = 6;
   // Parameters for APD
   G4double siliconXY = 10*mm;
   G4double siliconZ = 0.1*mm;

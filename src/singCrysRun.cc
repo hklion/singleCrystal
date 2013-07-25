@@ -1,6 +1,7 @@
 #include "singCrysRun.hh"
 #include "G4SDManager.hh"
 #include "G4Event.hh"
+#include "singCrysAnalysis.hh"
 
 // Constructor for 'singCrysRun' class
 singCrysRun::singCrysRun() : nEvent(0)
@@ -19,20 +20,34 @@ singCrysRun::~singCrysRun()
 // Function called by GEANT4 that records the hits into members of this class
 void singCrysRun::RecordEvent(const G4Event* evt)
 {
+  G4double EDep = 0.;
+  G4double SurfCurr = 0.;
   nEvent++;
+  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   // Get pointer to hits collection for this event. If NULL, there were no
   // hits and we should skip the rest of this to avoid segfaults.
   G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
-  if (!HCE)
-    return;
-  // Get events for desired quantities
-  G4THitsMap<G4double>* eventTotalSurfCurr =
-    (G4THitsMap<G4double>*)(HCE->GetHC(totalSurfCurrID));
-  G4THitsMap<G4double>* eventTotalEDep =
-    (G4THitsMap<G4double>*)(HCE->GetHC(totalEDepID));
-  // Add them to the member hit maps
-  totalSurfCurr += *eventTotalSurfCurr;
-  totalEDep += *eventTotalEDep;
+  if (HCE)
+  {
+    // Get events for desired quantities
+    G4THitsMap<G4double>* eventTotalSurfCurr =
+      (G4THitsMap<G4double>*)(HCE->GetHC(totalSurfCurrID));
+    G4THitsMap<G4double>* eventTotalEDep =
+      (G4THitsMap<G4double>*)(HCE->GetHC(totalEDepID));
+    // Add them to the member hit maps
+    totalSurfCurr += *eventTotalSurfCurr;
+    totalEDep += *eventTotalEDep;
+    if ((*(eventTotalEDep))[0])
+    {
+      EDep = *((*(eventTotalEDep))[0]);
+    }
+    if ((*(eventTotalSurfCurr))[0])
+    {
+      SurfCurr = *((*(eventTotalSurfCurr))[0]);
+    }
+  }
+  analysisManager->FillH1(1, EDep);
+  analysisManager->FillH1(2, SurfCurr);
 }
 
 // Prints the amount of energy deposited in the silicon.
