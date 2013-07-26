@@ -29,8 +29,8 @@ void singCrysRunAction::BeginOfRunAction(const G4Run* aRun)
   analysisManager->OpenFile(fileName);
   analysisManager->SetFirstHistoId(1);
   // Create histograms
-  analysisManager->CreateH1("edep", "Edep in silicon", 100, 0., 100*keV);
-  analysisManager->CreateH1("surfcurr", "Surface current", 100, 0., 400/mm2);
+  analysisManager->CreateH1("edep", "Energy deposited", 100, 0., 0.0005);
+  analysisManager->CreateH1("nphotons", "Number of Photons", 100, 0., 200);
 }
 
 // At the end of run, print the run's energy deposition and current tally.

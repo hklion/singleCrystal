@@ -160,19 +160,20 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4NistManager* nist = G4NistManager::Instance();
 
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
-  G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
+  //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
+  G4double crysSideLength = 3.*cm;
   G4double crysSizeZ = 11*cm;
-  G4int crysNumSides = 6;
+  G4int crysNumSides = 4;
   // Parameters for APD
   G4double siliconXY = 10*mm;
-  G4double siliconZ = 0.1*mm;
+  G4double siliconZ = 0.4*mm;
   G4double casingX = 13.7*mm;
   G4double casingY = 14.5*mm;
   G4double casingZ = 1.78*mm;
   G4double epoxyX = 11.7*mm;
   G4double epoxyY = 12.5*mm;
   G4double epoxyZ = 0.6*mm;
-  G4double mountingZ = 2.*mm; // Thickness of mounting
+  G4double mountingZ = 0.3*mm; // Thickness of mounting
   G4double APDZ = mountingZ + casingZ;
   // Length from the center of the polygonal face to the middle of one of
   // the polygon's sides.
@@ -185,7 +186,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4bool checkOverlaps = true;
 
   // World parameters
-  G4double worldSizeXY = 2.4 * crysMaxXYRad; // Maximum width is twice radius
+  G4double worldSizeXY = 5 * crysMaxXYRad; // Maximum width is twice radius
   G4double worldSizeZ = 5 * crysSizeZ;
   G4Material* worldMat = nist->FindOrBuildMaterial("G4_Galactic");
   worldMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));

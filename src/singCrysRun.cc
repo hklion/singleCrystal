@@ -39,11 +39,11 @@ void singCrysRun::RecordEvent(const G4Event* evt)
     totalEDep += *eventTotalEDep;
     if ((*(eventTotalEDep))[0])
     {
-      EDep = *((*(eventTotalEDep))[0]);
+      EDep = (*((*(eventTotalEDep))[0]));
     }
     if ((*(eventTotalSurfCurr))[0])
     {
-      SurfCurr = *((*(eventTotalSurfCurr))[0]);
+      SurfCurr = (*((*(eventTotalSurfCurr))[0])) * 100;
     }
   }
   analysisManager->FillH1(1, EDep);

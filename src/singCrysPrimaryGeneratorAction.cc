@@ -21,10 +21,10 @@ singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
   
   // Choose the particle for the gun
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4String particleName = "e-";
+  G4String particleName = "gamma";
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName));
-  particleGun->SetParticleEnergy(105.*MeV);
+  particleGun->SetParticleEnergy(511.*keV);
 }
 
 // Destructor: delete the particle gun
@@ -60,15 +60,15 @@ void singCrysPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4cerr << "The gun will be placed in the center." << G4endl;
   }  
   // Determine crystal dimensions.
-  G4double crystalZHalfLength = worldZHalfLength / 1.2;
-  G4double crystalXYHalfLength = worldXYHalfLength / 1.2;
+  G4double crystalZHalfLength = worldZHalfLength / 5;
+  G4double crystalXYHalfLength = worldXYHalfLength / 5;
   // Choose random position along crystal length for z coordinate of gun
   G4double gunZ0 = crystalZHalfLength * (G4UniformRand() * 2 - 1);
   // Place gun at random z coordinate along crystal length and at a position
   // known to be outside of the crystal.
   particleGun->
     SetParticlePosition(G4ThreeVector(0.0, 0.0, -crystalZHalfLength * 1.1));
-    //SetParticlePosition(G4ThreeVector(0.0, crystalXYHalfLength, gunZ0));
+    //SetParticlePosition(G4ThreeVector(0.0, crystalXYHalfLength*1.8, gunZ0));
   particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0, 0.0, 1.0));
   particleGun->GeneratePrimaryVertex(anEvent);
 }
