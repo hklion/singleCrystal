@@ -14,6 +14,8 @@
 #include "G4VPrimitiveScorer.hh"
 #include "G4PSFlatSurfaceCurrent.hh"
 #include "G4PSEnergyDeposit.hh"
+#include "G4OpticalSurface.hh"
+#include "G4LogicalBorderSurface.hh"
 
 // Constructor: define materials
 singCrysDetectorConstruction::singCrysDetectorConstruction()
@@ -118,13 +120,18 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
   {1.550*eV, 1.653*eV, 1.771*eV, 1.908*eV, 2.067*eV, 2.254*eV, 2.480*eV,
    2.755*eV, 3.100*eV, 3.543*eV, 4.133*eV};
   // Define refractive index
-  G4double RefractiveIndex[nEntries] =
+  G4double RefractiveIndexReal[nEntries] =
   {2.767, 2.367, 1.921, 1.558, 1.262, 1.015, 0.8126, 0.6332, 0.4879,
-  0.3667, 0.26418};        
+  0.3667, 0.26418};
+  G4double RefractiveIndexImaginary[nEntries] =
+  {8.3543, 8.4177, 8.1420, 7.7124, 7.1855, 6.6273, 6.0481, 5.4544, 4.8355,
+   4.2127, 3.5787};
   // Construct table and add refractive index property.
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
-  table->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries);
-  
+  table->AddProperty("REALRINDEX", PhotonEnergy, RefractiveIndexReal,
+                     nEntries)->SetSpline(true);
+  table->AddProperty("IMAGINARYRINDEX", PhotonEnergy, RefractiveIndexImaginary,
+                     nEntries)->SetSpline(true);
   return table;
 }
 
@@ -267,13 +274,16 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double layer2RadLen = layer1RadLen + layer2Thick;
   G4double layer1ROuter[2] = {layer1RadLen, layer1RadLen};
   G4double layer2ROuter[2] = {layer2RadLen, layer2RadLen};
-
+  G4double layer1ZPlaneCoords[2] = {-0.5 * crysSizeZ - layer1Thick,
+                                    0.5 * crysSizeZ};
+  G4double layer2ZPlaneCoords[2] =
+    {-0.5 * crysSizeZ - layer1Thick - layer2Thick,  0.5 * crysSizeZ};
   G4Polyhedra* solidLayer1 = new G4Polyhedra("Layer 1",
                                             rotation,
                                             2*pi + rotation,
                                             crysNumSides,
                                             2,
-                                            crysZPlaneCoords,
+                                            layer1ZPlaneCoords,
                                             crysRInner,
                                             layer1ROuter);
 
@@ -282,7 +292,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                             2*pi + rotation,
                                             crysNumSides,
                                             2,
-                                            crysZPlaneCoords,
+                                            layer2ZPlaneCoords,
                                             crysRInner,
                                             layer2ROuter); 
 
@@ -294,7 +304,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                      layer2Mat,     // material
                                                      "Layer 2");  // name
   
-  new G4PVPlacement(0,                // no rotation
+  G4VPhysicalVolume* physCrys = new G4PVPlacement(0,  // no rotation
                     G4ThreeVector(),  // at the origin
                     logicCrys,        // logical volume
                     "Crystal",        // name
@@ -303,7 +313,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     0,                // copy number
                     checkOverlaps);   // overlaps checking
 
-  new G4PVPlacement(0,                // no rotation
+  G4VPhysicalVolume* physLayer1 = new G4PVPlacement(0,   // no rotation
                     G4ThreeVector(),  // at the origin
                     logicLayer1,      // logical volume
                     "Layer 1",        // name
@@ -312,7 +322,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     0,                // copy number
                     checkOverlaps);   // overlaps checking
 
-  new G4PVPlacement(0,                // no rotation
+  G4VPhysicalVolume* physLayer2 = new G4PVPlacement(0,   // no rotation
                     G4ThreeVector(),  // at the origin
                     logicLayer2,      // logical volume
                     "Layer 2",        // name
@@ -320,6 +330,15 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     false,            // no boolean operation
                     0,                // copy number
                     checkOverlaps);   // overlaps checking
+
+  // Now define the air-aluminum and aluminum-crystal boundaries.
+  G4OpticalSurface* OpCrysAlSurface = new G4OpticalSurface("CrysAlSurface");
+  OpCrysAlSurface->SetModel(glisur);
+  OpCrysAlSurface->SetType(dielectric_metal);
+  OpCrysAlSurface->SetFinish(polished);
+  
+  G4LogicalBorderSurface* CrysAlSurface = new
+    G4LogicalBorderSurface("CrysAlSurface", physCrys, physLayer1, OpCrysAlSurface);
 
   // Define solids for APD
   G4Box* solidAPD = new G4Box("APD",
@@ -381,7 +400,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Place epoxy and silicon in casing.
   G4double epoxyPlaceZ = -0.5 * (casingZ - epoxyZ);
   G4double siliconPlaceZ = -(0.5 * (casingZ - siliconZ) - epoxyZ);
-  new G4PVPlacement(0,
+  G4VPhysicalVolume* physEpoxy = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm ,0.4*mm, epoxyPlaceZ),
                     logicEpoxy,
                     "Epoxy",
@@ -389,7 +408,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     false,
                     0,
                     checkOverlaps);
-  new G4PVPlacement(0,
+  G4VPhysicalVolume* physSilicon = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.4*mm, siliconPlaceZ),
                     logicSilicon,
                     "Silicon",
@@ -401,7 +420,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Place casing and mounting in APD
   G4double mountingPlaceZ = -0.5 * (APDZ - mountingZ);
   G4double casingPlaceZ = -0.5 * (casingZ - APDZ);
-  new G4PVPlacement(0,
+  G4VPhysicalVolume* physMounting = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, mountingPlaceZ),
                     logicMounting,
                     "Mounting",
@@ -409,7 +428,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     false,
                     0,
                     checkOverlaps);
-  new G4PVPlacement(0,
+  G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, casingPlaceZ),
                     logicCasing,
                     "Casing",
@@ -420,7 +439,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Place APD
   G4double APDZPlacement = 0.5 * (crysSizeZ + APDZ);
-  new G4PVPlacement(0,
+  G4VPhysicalVolume* physAPD = new G4PVPlacement(0,
                     G4ThreeVector(0.0*cm, 0.0*cm, APDZPlacement),
                     logicAPD,
                     "APD",
