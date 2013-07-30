@@ -57,15 +57,10 @@ void singCrysDetectorConstruction::DefineMaterials()
   epoxy->AddElement(H, 1);
   epoxy->AddElement(O, 1);
 
-  // Define silicon
-  G4Material* silicon = new G4Material("Silicon", 2.65*g/cm3, 1);
-  silicon->AddElement(Si, 1);
-
   // Define optical grease
   G4Material* opticalGrease = new G4Material("opticalgrease", 1.0*g/cm3, 2);
   opticalGrease->AddElement(Si, 1);
-  opticalGrease->AddElement(O, 1);
-
+  opticalGrease->AddElement(O, 1); 
 }
 
 // Constructs and returns material properties table for LYSO
@@ -110,6 +105,26 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
   table->AddConstProperty("RESOLUTIONSCALE", 1.0); //TODO: FIX
   table->AddConstProperty("FASTTIMECONSTANT", 40.*ns);
 
+  return table;
+}
+
+// Constructs and returns material properties table for aluminum
+G4MaterialPropertiesTable* singCrysDetectorConstruction::
+  generateAlTable()
+{
+  const G4int nEntries = 11;
+  // Define photon energies
+  G4double PhotonEnergy[nEntries] =
+  {1.550*eV, 1.653*eV, 1.771*eV, 1.908*eV, 2.067*eV, 2.254*eV, 2.480*eV,
+   2.755*eV, 3.100*eV, 3.543*eV, 4.133*eV};
+  // Define refractive index
+  G4double RefractiveIndex[nEntries] =
+  {2.767, 2.367, 1.921, 1.558, 1.262, 1.015, 0.8126, 0.6332, 0.4879,
+  0.3667, 0.26418};        
+  // Construct table and add refractive index property.
+  G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
+  table->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries);
+  
   return table;
 }
 
@@ -164,6 +179,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double crysSideLength = 3.*cm;
   G4double crysSizeZ = 11*cm;
   G4int crysNumSides = 4;
+  G4double layer1Thick = 1*mm;
+  G4double layer2Thick = 1*mm;
   // Parameters for APD
   G4double siliconXY = 10*mm;
   G4double siliconZ = 0.4*mm;
@@ -181,7 +198,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double crysMaxXYRad = crysSideLength / (2 * std::sin(pi / crysNumSides));
   G4Material* crysMat = nist->FindOrBuildMaterial("LYSO");
   crysMat->SetMaterialPropertiesTable(generateLYSOTable());
-  
+  G4Material* layer1Mat = nist->FindOrBuildMaterial("G4_Al");
+  layer1Mat->SetMaterialPropertiesTable(generateAlTable());
+  G4Material* layer2Mat = nist->FindOrBuildMaterial("G4_Galactic");
+  layer2Mat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
   // Check overlaps in volumes
   G4bool checkOverlaps = true;
 
@@ -237,11 +257,66 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                    crysMat,     // material
                                                    "Crystal");  // name
 
+  // Define two other polyhedra to serve as layers surrounding the crystal.
+  // The first will be a user-defined amount larger than the crystal, and
+  // the second will be a user-defined amount larger than the first. The
+  // crystal will be placed in the first, and the first will be placed in
+  // the second. This will create layers.
+
+  G4double layer1RadLen = crysRadLen + layer1Thick;
+  G4double layer2RadLen = layer1RadLen + layer2Thick;
+  G4double layer1ROuter[2] = {layer1RadLen, layer1RadLen};
+  G4double layer2ROuter[2] = {layer2RadLen, layer2RadLen};
+
+  G4Polyhedra* solidLayer1 = new G4Polyhedra("Layer 1",
+                                            rotation,
+                                            2*pi + rotation,
+                                            crysNumSides,
+                                            2,
+                                            crysZPlaneCoords,
+                                            crysRInner,
+                                            layer1ROuter);
+
+  G4Polyhedra* solidLayer2 = new G4Polyhedra("Layer 2",
+                                            rotation,
+                                            2*pi + rotation,
+                                            crysNumSides,
+                                            2,
+                                            crysZPlaneCoords,
+                                            crysRInner,
+                                            layer2ROuter); 
+
+  G4LogicalVolume* logicLayer1 = new G4LogicalVolume(solidLayer1,   // solid
+                                                     layer1Mat,     // material
+                                                     "Layer 1");  // name
+
+  G4LogicalVolume* logicLayer2 = new G4LogicalVolume(solidLayer2,   // solid
+                                                     layer2Mat,     // material
+                                                     "Layer 2");  // name
+  
   new G4PVPlacement(0,                // no rotation
                     G4ThreeVector(),  // at the origin
                     logicCrys,        // logical volume
                     "Crystal",        // name
-                    logicWorld,        // mother volume
+                    logicLayer1,      // mother volume
+                    false,            // no boolean operation
+                    0,                // copy number
+                    checkOverlaps);   // overlaps checking
+
+  new G4PVPlacement(0,                // no rotation
+                    G4ThreeVector(),  // at the origin
+                    logicLayer1,      // logical volume
+                    "Layer 1",        // name
+                    logicLayer2,      // mother volume
+                    false,            // no boolean operation
+                    0,                // copy number
+                    checkOverlaps);   // overlaps checking
+
+  new G4PVPlacement(0,                // no rotation
+                    G4ThreeVector(),  // at the origin
+                    logicLayer2,      // logical volume
+                    "Layer 2",        // name
+                    logicWorld,       // mother volume
                     false,            // no boolean operation
                     0,                // copy number
                     checkOverlaps);   // overlaps checking
@@ -264,7 +339,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4Material* casingMat = nist->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
   G4Material* epoxyMat = nist->FindOrBuildMaterial("Epoxy");
   epoxyMat->SetMaterialPropertiesTable(generateRIndexTable(1.5));
-  G4Material* siliconMat = nist->FindOrBuildMaterial("Silicon");
+  G4Material* siliconMat = nist->FindOrBuildMaterial("G4_Si");
   siliconMat->SetMaterialPropertiesTable(generateSiTable());
   G4Material* mountingMat = nist->FindOrBuildMaterial("opticalgrease");
   mountingMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
@@ -355,7 +430,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     checkOverlaps);
   // Set energy limits. If particle below energy limit, track is
   // killed and energy is deposited.
-  fLimit = new G4UserLimits(DBL_MAX, DBL_MAX, DBL_MAX, 10*eV);
+  fLimit = new G4UserLimits(DBL_MAX, DBL_MAX, DBL_MAX, 1000*MeV);
   logicSilicon->SetUserLimits(fLimit);
  
   return physWorld;

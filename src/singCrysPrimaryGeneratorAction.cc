@@ -21,7 +21,7 @@ singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
   
   // Choose the particle for the gun
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4String particleName = "gamma";
+  G4String particleName = "e-";
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName));
   particleGun->SetParticleEnergy(511.*keV);
