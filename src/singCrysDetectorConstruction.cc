@@ -16,6 +16,7 @@
 #include "G4PSEnergyDeposit.hh"
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4SubtractionSolid.hh"
 
 // Constructor: define materials
 singCrysDetectorConstruction::singCrysDetectorConstruction()
@@ -198,6 +199,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double epoxyY = 12.5*mm;
   G4double epoxyZ = 0.6*mm;
   G4double mountingZ = 0.3*mm; // Thickness of mounting
+  G4double APDAlCaseThick = 5.*mm;
+  G4double APDAlCaseZ = 12.*mm;
+  G4double APDSlotDepth = 5.*mm;
   G4double APDZ = mountingZ + casingZ;
   // Length from the center of the polygonal face to the middle of one of
   // the polygon's sides.
@@ -363,7 +367,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4Material* mountingMat = nist->FindOrBuildMaterial("opticalgrease");
   mountingMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
 
-  // Define logical volumes
+// Define logical volumes
   G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
                                                   APDMat,
                                                   "APD");
@@ -419,34 +423,72 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Place casing and mounting in APD
   G4double mountingPlaceZ = -0.5 * (APDZ - mountingZ);
-  G4double casingPlaceZ = -0.5 * (casingZ - APDZ);
-  G4VPhysicalVolume* physMounting = new G4PVPlacement(0,
+  //G4double casingPlaceZ = -0.5 * (casingZ - APDZ);
+  // Commented out for now while larger mounting
+  /*G4VPhysicalVolume* physMounting = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, mountingPlaceZ),
                     logicMounting,
                     "Mounting",
                     logicAPD,
                     false,
                     0,
-                    checkOverlaps);
+                    checkOverlaps);*/
+
+  // Make aluminum casing for APD
+  G4double APDAlCaseRadLen = layer2RadLen + APDAlCaseThick;
+  G4double APDAlCaseZPlaneCoords[2] = {-0.5 * APDAlCaseZ, 0.5 * APDAlCaseZ};
+  G4double APDAlCaseROuter[2] = {APDAlCaseRadLen, APDAlCaseRadLen};
+  G4ThreeVector translation(0.0, 0.0,
+    -0.5 * (crysSizeZ + APDAlCaseZ) + APDSlotDepth);
+  G4double APDSlotZPlaneCoords[2] = 
+    {-0.5 * APDAlCaseZ, -0.5 * APDAlCaseZ + APDSlotDepth};
+  G4Polyhedra* solidAlAPDCaseFull = new G4Polyhedra("AlAPDCaseFull",
+                                     rotation,
+                                     2*pi + rotation,
+                                     crysNumSides,
+                                     2,
+                                     APDAlCaseZPlaneCoords,
+                                     crysRInner,
+                                     APDAlCaseROuter);
+  G4SubtractionSolid* solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
+                                        solidAlAPDCaseFull, solidLayer2, 0,
+                                        translation);
+  G4Material* APDAlCaseMat = nist->FindOrBuildMaterial("G4_Al");
+  APDAlCaseMat->SetMaterialPropertiesTable(generateAlTable());
+  G4LogicalVolume* logicAlAPDCase = new G4LogicalVolume(solidAlAPDCase,
+                                                       APDAlCaseMat,
+                                                       "AlAPDCase");
+  // Place APD casing in the aluminum case
+  G4double casingPlaceZ = 0.5 * APDAlCaseZ - (0.5 * casingZ + APDSlotDepth);
   G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, casingPlaceZ),
                     logicCasing,
                     "Casing",
-                    logicAPD,
+                    logicAlAPDCase,
                     false,
                     0,
                     checkOverlaps);
 
+  G4VPhysicalVolume* physAlAPDCase = new G4PVPlacement(0,
+                                         -translation,
+                                         logicAlAPDCase,
+                                         "AlAPDCase",
+                                         logicWorld,
+                                         false,
+                                         0,
+                                         checkOverlaps);
+
+
   // Place APD
-  G4double APDZPlacement = 0.5 * (crysSizeZ + APDZ);
+ /* G4double APDZPlacement = 0.5 * (crysSizeZ + APDZ);
   G4VPhysicalVolume* physAPD = new G4PVPlacement(0,
                     G4ThreeVector(0.0*cm, 0.0*cm, APDZPlacement),
                     logicAPD,
                     "APD",
-                    logicWorld,
+                    logicAlAPDCase,
                     false,
                     0,
-                    checkOverlaps);
+                    checkOverlaps);*/
   // Set energy limits. If particle below energy limit, track is
   // killed and energy is deposited.
   fLimit = new G4UserLimits(DBL_MAX, DBL_MAX, DBL_MAX, 1000*MeV);
