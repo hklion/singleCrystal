@@ -186,9 +186,11 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
   G4double crysSideLength = 3.*cm;
   G4double crysSizeZ = 11*cm;
-  G4int crysNumSides = 4;
-  G4double layer1Thick = 1*mm;
+  G4int crysNumSides = 6;
+  G4double layer1Thick = 100*um;
   G4double layer2Thick = 1*mm;
+  G4double AlCoating1Z = 0.1*mm;
+  G4double AlCoating2Z = 0.5*mm;
   // Parameters for APD
   G4double siliconXY = 10*mm;
   G4double siliconZ = 0.4*mm;
@@ -200,7 +202,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double epoxyZ = 0.6*mm;
   G4double mountingZ = 0.3*mm; // Thickness of mounting
   G4double APDAlCaseThick = 5.*mm;
-  G4double APDAlCaseZ = 12.*mm;
+  G4double APDAlCaseZ = 10.*mm;
   G4double APDSlotDepth = 5.*mm;
   G4double APDZ = mountingZ + casingZ;
   // Length from the center of the polygonal face to the middle of one of
@@ -439,10 +441,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double APDAlCaseZPlaneCoords[2] = {-0.5 * APDAlCaseZ, 0.5 * APDAlCaseZ};
   G4double APDAlCaseROuter[2] = {APDAlCaseRadLen, APDAlCaseRadLen};
   G4ThreeVector translCrysAPDCase(0.0, 0.0,
-    -0.5 * (crysSizeZ + APDAlCaseZ) + APDSlotDepth);
-  G4double casingPlaceZ = 0.5 * APDAlCaseZ - 0.5 * casingZ - APDSlotDepth;
-  G4double APDSlotZPlaneCoords[2] = 
-    {-0.5 * APDAlCaseZ, -0.5 * APDAlCaseZ + APDSlotDepth};
+    -0.5 * (crysSizeZ + APDAlCaseZ) + APDSlotDepth + AlCoating1Z + AlCoating2Z);
+  G4double casingPlaceZ = 0.5 * APDAlCaseZ - 0.5 * casingZ - APDSlotDepth
+    - AlCoating1Z - AlCoating2Z;
   G4Polyhedra* solidAlAPDCaseFull = new G4Polyhedra("AlAPDCaseFull",
                                      rotation,
                                      2*pi + rotation,
@@ -463,8 +464,57 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalVolume* logicAlAPDCase = new G4LogicalVolume(solidAlAPDCase,
                                                        APDAlCaseMat,
                                                        "AlAPDCase");
+  // Make coatings for aluminum casing.
+  G4double AlCoating1ZPlaneCoords[2] = {0.5 * crysSizeZ,
+    0.5 * crysSizeZ + AlCoating1Z};
+  G4double AlCoating2ZPlaneCoords[2] = {0.5 * crysSizeZ + AlCoating1Z,
+    0.5 * crysSizeZ + AlCoating1Z + AlCoating2Z};
+  G4Polyhedra* solidAlCoating1 = new G4Polyhedra("AlCoating1",
+                                                  rotation,
+                                                  2*pi + rotation,
+                                                  crysNumSides,
+                                                  2,
+                                                  AlCoating1ZPlaneCoords,
+                                                  crysRInner,
+                                                  layer2ROuter);
+  G4Polyhedra* solidAlCoating2 = new G4Polyhedra("AlCoating1",
+                                                  rotation,
+                                                  2*pi + rotation,
+                                                  crysNumSides,
+                                                  2,
+                                                  AlCoating2ZPlaneCoords,
+                                                  crysRInner,
+                                                  layer2ROuter);
+  G4Material* coating1Mat = worldMat;
+  G4Material* coating2Mat = nist->FindOrBuildMaterial("Epoxy");
+  coating2Mat->SetMaterialPropertiesTable(generateRIndexTable(1.5));
+  G4LogicalVolume* logicAlCoating1 = new G4LogicalVolume(solidAlCoating1,
+                                                         coating1Mat,
+                                                         "AlCoating1");
+  G4LogicalVolume* logicAlCoating2 = new G4LogicalVolume(solidAlCoating2,
+                                                         coating2Mat,
+                                                         "AlCoating2");
+  G4VPhysicalVolume* physAlCoating1 = new G4PVPlacement(0,
+                                                       G4ThreeVector(),
+                                                       logicAlCoating1,
+                                                       "AlCoating1",
+                                                       logicWorld,
+                                                       false,
+                                                       0,
+                                                       checkOverlaps);
+
+  G4VPhysicalVolume* physAlCoating2 = new G4PVPlacement(0,
+                                                       G4ThreeVector(),
+                                                       logicAlCoating2,
+                                                       "AlCoating2",
+                                                       logicWorld,
+                                                       false,
+                                                       0,
+                                                       checkOverlaps);
+
+
   // Place APD casing in the world volume
-  G4double APDPlaceZ = 0.5 * (crysSizeZ + casingZ);
+  G4double APDPlaceZ = 0.5 * (crysSizeZ + casingZ) + AlCoating1Z + AlCoating2Z;
   G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, APDPlaceZ),
                     logicCasing,
@@ -473,24 +523,25 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     false,
                     0,
                     checkOverlaps);
-
+  G4double APDCasePlacement = 0.5 * (crysSizeZ + APDAlCaseZ) - APDSlotDepth; 
   G4VPhysicalVolume* physAlAPDCase = new G4PVPlacement(0,
-                                         -translCrysAPDCase,
+                                         G4ThreeVector(0.,0.,APDCasePlacement),
+                                         //G4ThreeVector(0., 0., 15.*cm),
                                          logicAlAPDCase,
                                          "AlAPDCase",
                                          logicWorld,
                                          false,
                                          0,
                                          checkOverlaps);
-  // Now define the aluminum casing-crystal boundary.
-  G4OpticalSurface* OpCrysAPDCaseSurface = 
-    new G4OpticalSurface("CrysAPDCaseSurface");
-  OpCrysAPDCaseSurface->SetModel(glisur);
-  OpCrysAPDCaseSurface->SetType(dielectric_metal);
-  OpCrysAPDCaseSurface->SetFinish(polished);
-  G4LogicalBorderSurface* CrysAPDCaseSurface = new
-  G4LogicalBorderSurface("CrysAPDCaseSurface", physCrys, physAlAPDCase,
-    OpCrysAPDCaseSurface);
+  // Now define the aluminum casing-coating2 boundary.
+  G4OpticalSurface* OpCoat2APDCaseSurface = 
+    new G4OpticalSurface("Coating2APDCaseSurface");
+  OpCoat2APDCaseSurface->SetModel(glisur);
+  OpCoat2APDCaseSurface->SetType(dielectric_metal);
+  OpCoat2APDCaseSurface->SetFinish(polished);
+  G4LogicalBorderSurface* Coat2APDCaseSurface = new
+  G4LogicalBorderSurface("Coating2APDCaseSurface", physAlCoating2,
+    physAlAPDCase, OpCoat2APDCaseSurface);
 
   // Place APD
  /* G4double APDZPlacement = 0.5 * (crysSizeZ + APDZ);
