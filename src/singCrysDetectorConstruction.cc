@@ -149,10 +149,11 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
   G4double RefractiveIndex[nEntries] = 
   {3.696, 3.734, 3.783, 3.849, 3.939, 4.072, 4.286, 4.687, 5.646,
    5.446, 4.966};
-
+  G4double Efficiency[nEntries] = {.5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5};
   // Construct table and add refractive index property.
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
   table->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries);
+  //table->AddProperty("EFFICIENCY", PhotonEnergy, Efficiency, nEntries);
 
   return table;
 }
@@ -184,31 +185,31 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
-  G4double crysSideLength = 3.*cm;
-  G4double crysSizeZ = 11*cm;
-  G4int crysNumSides = 6;
-  G4double layer1Thick = 100*um;
-  G4double layer2Thick = 1*mm;
-  G4double AlCoating1Z = 0.1*mm;
-  G4double AlCoating2Z = 0.5*mm;
+  G4double crysSideLength = 3.*cm;  // Length along flats
+  G4double crysSizeZ = 11*cm;       // Z axis length
+  G4int crysNumSides = 4;           // Number of sides
+  G4double layer1Thick = 100*um;    // Thickness of layer surrounding crystal
+  G4double layer2Thick = 1*mm;      // Thickness of layer surrounding layer1
+  G4double AlCoating1Z = 0.1*mm;    // Thickness of top Al APD case coating
+  G4double AlCoating2Z = 0.5*mm;    // Thickenss of bottom Al APD case coating
   // Parameters for APD
-  G4double siliconXY = 10*mm;
-  G4double siliconZ = 0.4*mm;
-  G4double casingX = 13.7*mm;
-  G4double casingY = 14.5*mm;
-  G4double casingZ = 1.78*mm;
-  G4double epoxyX = 11.7*mm;
-  G4double epoxyY = 12.5*mm;
-  G4double epoxyZ = 0.6*mm;
-  G4double mountingZ = 0.3*mm; // Thickness of mounting
-  G4double APDAlCaseThick = 5.*mm;
-  G4double APDAlCaseZ = 10.*mm;
-  G4double APDSlotDepth = 5.*mm;
-  G4double APDZ = mountingZ + casingZ;
+  G4double siliconXY = 10*mm;       // XY dimension of silicon APD chip
+  G4double siliconZ = 0.4*mm;       // Thickness of silicon APD chip
+  G4double casingX = 13.7*mm;       // X dimension of APD ceramic casing
+  G4double casingY = 14.5*mm;       // Y dimension of APD ceramic casing
+  G4double casingZ = 1.78*mm;       // Thickness of APD ceramic casing
+  G4double epoxyX = 11.7*mm;        // X dimension of epoxy on APD
+  G4double epoxyY = 12.5*mm;        // Y dimension of epoxy on APD
+  G4double epoxyZ = 0.6*mm;         // Thickness of epoxy on APD
+  G4double APDAlCaseThick = 5.*mm;  // Thickness of rim on Al APD case
+  G4double APDAlCaseZ = 10.*mm;     // Thickness of Al APD case
+  G4double APDSlotDepth = 5.*mm;    // How much the crystal is in the Al case
   // Length from the center of the polygonal face to the middle of one of
   // the polygon's sides.
   G4double crysRadLen = crysSideLength / (2 * std::tan(pi / crysNumSides));
   G4double crysMaxXYRad = crysSideLength / (2 * std::sin(pi / crysNumSides));
+  
+  // Define materials for crystals and layering
   G4Material* crysMat = nist->FindOrBuildMaterial("LYSO");
   crysMat->SetMaterialPropertiesTable(generateLYSOTable());
   G4Material* layer1Mat = nist->FindOrBuildMaterial("G4_Al");
@@ -231,7 +232,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld, // solid
                                                     worldMat,   // material
                                                     "World");   // name
-
+  // Place the world
   G4VPhysicalVolume* physWorld =
     new G4PVPlacement(0,                // no rotation
                       G4ThreeVector(),  // at the origin
@@ -246,7 +247,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Define crystal: for the sake of simplicity, just a box for now
 //  G4Box* solidCrys = new G4Box("Crystal",
 //    0.5 * crysSideLength, 0.5 * crysSideLength, 0.5 * crysSizeZ);
-
+  // Parameters for the crystal geometry
   G4double crysZPlaneCoords[2] = {-0.5 * crysSizeZ, 0.5 * crysSizeZ};
   G4double crysRInner[2] = {0, 0};
   G4double crysROuter[2] = {crysRadLen, crysRadLen};
@@ -256,7 +257,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // the interior angles of the polygon divided by the number of sides,
   // divided by two.
   G4double rotation = (crysNumSides - 2) * pi / (2 * crysNumSides);
-
+  // Define crystal
   G4Polyhedra* solidCrys = new G4Polyhedra("Crystal",
                                      rotation,
                                      2*pi + rotation,
@@ -309,7 +310,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalVolume* logicLayer2 = new G4LogicalVolume(solidLayer2,   // solid
                                                      layer2Mat,     // material
                                                      "Layer 2");  // name
-  
+  // Place crystal and layers 
   G4VPhysicalVolume* physCrys = new G4PVPlacement(0,  // no rotation
                     G4ThreeVector(),  // at the origin
                     logicCrys,        // logical volume
@@ -337,7 +338,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     0,                // copy number
                     checkOverlaps);   // overlaps checking
 
-  // Now define the air-aluminum and aluminum-crystal boundaries.
+  // Now define the aluminum-crystal boundary.
   G4OpticalSurface* OpCrysAlSurface = new G4OpticalSurface("CrysAlSurface");
   OpCrysAlSurface->SetModel(glisur);
   OpCrysAlSurface->SetType(dielectric_metal);
@@ -347,16 +348,12 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     G4LogicalBorderSurface("CrysAlSurface", physCrys, physLayer1, OpCrysAlSurface);
 
   // Define solids for APD
-  G4Box* solidAPD = new G4Box("APD",
-    casingX * 0.5, casingY * 0.5, APDZ * 0.5);
   G4Box* solidCasing = new G4Box("CasingFull",
     casingX * 0.5, casingY * 0.5, casingZ * 0.5);
   G4Box* solidEpoxy = new G4Box("Epoxy",
     epoxyX * 0.5, epoxyY * 0.5, epoxyZ * 0.5);
   G4Box* solidSilicon = new G4Box("SiDetector",
     siliconXY * 0.5, siliconXY * 0.5, siliconZ * 0.5);
-  G4Box* solidMounting = new G4Box("Mounting",
-    casingX * 0.5, casingY * 0.5, mountingZ * 0.5);  
 
   // Define materials for APD
   G4Material* APDMat = nist->FindOrBuildMaterial("G4_AIR");
@@ -366,13 +363,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   epoxyMat->SetMaterialPropertiesTable(generateRIndexTable(1.5));
   G4Material* siliconMat = nist->FindOrBuildMaterial("G4_Si");
   siliconMat->SetMaterialPropertiesTable(generateSiTable());
-  G4Material* mountingMat = nist->FindOrBuildMaterial("opticalgrease");
-  mountingMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
 
 // Define logical volumes
-  G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
-                                                  APDMat,
-                                                  "APD");
   G4LogicalVolume* logicCasing = new G4LogicalVolume(solidCasing,
                                                      casingMat,
                                                      "Casing");
@@ -382,9 +374,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalVolume* logicSilicon = new G4LogicalVolume(solidSilicon,
                                                       siliconMat,
                                                       "Silicon");
-  G4LogicalVolume* logicMounting = new G4LogicalVolume(solidMounting,
-                                                       mountingMat,
-                                                       "Mounting");
   
   // Add multifunctional detector and scorers
   G4String siliconAPDname = "SiliconAPD";
@@ -423,20 +412,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     0,
                     checkOverlaps);
 
-  // Place casing and mounting in APD
-  G4double mountingPlaceZ = -0.5 * (APDZ - mountingZ);
-  //G4double casingPlaceZ = -0.5 * (casingZ - APDZ);
-  // Commented out for now while larger mounting
-  /*G4VPhysicalVolume* physMounting = new G4PVPlacement(0,
-                    G4ThreeVector(0.0*mm, 0.0*mm, mountingPlaceZ),
-                    logicMounting,
-                    "Mounting",
-                    logicAPD,
-                    false,
-                    0,
-                    checkOverlaps);*/
-
-  // Make aluminum casing for APD
+  // Make aluminum casing for APD. It is made by making a G4Polyhedra with
+  // the same number of sides as the crystal. Then the translated cyrstal
+  // is subtracted in order to make a dent for the coatings and crystal.
+  // Another subtraction is done to make a place for the APD.
   G4double APDAlCaseRadLen = layer2RadLen + APDAlCaseThick;
   G4double APDAlCaseZPlaneCoords[2] = {-0.5 * APDAlCaseZ, 0.5 * APDAlCaseZ};
   G4double APDAlCaseROuter[2] = {APDAlCaseRadLen, APDAlCaseRadLen};
@@ -458,7 +437,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4SubtractionSolid* solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
                                       solidAlAPDCaseMid, solidCasing, 0,
                                       G4ThreeVector(0.0, 0.0, -casingPlaceZ));
-                                      
+  // Generate aluminum material
   G4Material* APDAlCaseMat = nist->FindOrBuildMaterial("G4_Al");
   APDAlCaseMat->SetMaterialPropertiesTable(generateAlTable());
   G4LogicalVolume* logicAlAPDCase = new G4LogicalVolume(solidAlAPDCase,
@@ -543,16 +522,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalBorderSurface("Coating2APDCaseSurface", physAlCoating2,
     physAlAPDCase, OpCoat2APDCaseSurface);
 
-  // Place APD
- /* G4double APDZPlacement = 0.5 * (crysSizeZ + APDZ);
-  G4VPhysicalVolume* physAPD = new G4PVPlacement(0,
-                    G4ThreeVector(0.0*cm, 0.0*cm, APDZPlacement),
-                    logicAPD,
-                    "APD",
-                    logicAlAPDCase,
-                    false,
-                    0,
-                    checkOverlaps);*/
   // Set energy limits. If particle below energy limit, track is
   // killed and energy is deposited.
   fLimit = new G4UserLimits(DBL_MAX, DBL_MAX, DBL_MAX, 1000*MeV);
