@@ -14,8 +14,10 @@
 #include "G4VPrimitiveScorer.hh"
 #include "G4PSFlatSurfaceCurrent.hh"
 #include "G4PSEnergyDeposit.hh"
+#include "singCrysPSEnergy.hh"
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
 #include "G4SubtractionSolid.hh"
 
 // Constructor: define materials
@@ -108,6 +110,18 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
   table->AddConstProperty("RESOLUTIONSCALE", 1.0); //TODO: FIX
   table->AddConstProperty("FASTTIMECONSTANT", 40.*ns);
 
+  return table;
+}
+
+// Constructs and returns material properties table for silicon surface
+G4MaterialPropertiesTable* singCrysDetectorConstruction::
+  generateSiSurfaceTable()
+{
+  const G4int nEntries = 1;
+  G4double PhotonEnergy[nEntries] = {3*eV};
+  G4double Efficiency[nEntries] = {0.5};
+  G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
+  table->AddProperty("EFFICIENCY", PhotonEnergy, Efficiency, nEntries);
   return table;
 }
 
@@ -412,6 +426,14 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     0,
                     checkOverlaps);
 
+  // Make skin surface on silicon with a certain efficiency.
+  G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
+  optSilicon->SetModel(glisur);
+  optSilicon->SetFinish(polished);
+  optSilicon->SetType(dielectric_dielectric);
+  optSilicon->SetMaterialPropertiesTable(generateSiSurfaceTable());
+  G4LogicalSkinSurface* skinSilicon = new G4LogicalSkinSurface("skinSilicon",
+    logicSilicon, optSilicon);
   // Make aluminum casing for APD. It is made by making a G4Polyhedra with
   // the same number of sides as the crystal. Then the translated cyrstal
   // is subtracted in order to make a dent for the coatings and crystal.

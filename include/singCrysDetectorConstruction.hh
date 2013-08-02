@@ -28,6 +28,7 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
     void DefineMaterials();
     G4MaterialPropertiesTable* generateLYSOTable();
     G4MaterialPropertiesTable* generateRIndexTable(G4double rindex);
+    G4MaterialPropertiesTable* generateSiSurfaceTable();
     G4MaterialPropertiesTable* generateSiTable();
     G4MaterialPropertiesTable* generateAlTable();
     // Energy/length limits
