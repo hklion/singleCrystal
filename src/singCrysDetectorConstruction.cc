@@ -395,7 +395,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     new G4MultiFunctionalDetector(siliconAPDname);
   // Add scorers
   G4VPrimitiveScorer* primitive;
-  primitive = new G4PSEnergyDeposit("eDep");
+  primitive = new singCrysPSEnergy("eDep");
   SiliconMFD->RegisterPrimitive(primitive);
   // Gives the number of tracks that pass through the -Z surface of the solid.
   // The second argument tells the scorer to record tracks going in to the
