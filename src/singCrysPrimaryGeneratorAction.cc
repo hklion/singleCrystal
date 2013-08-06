@@ -21,10 +21,10 @@ singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
   
   // Choose the particle for the gun
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4String particleName = "gamma";
+  G4String particleName = "opticalphoton";
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName));
-  particleGun->SetParticleEnergy(511.*keV);
+  particleGun->SetParticleEnergy(3.*eV);
 }
 
 // Destructor: delete the particle gun
@@ -67,8 +67,8 @@ void singCrysPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Place gun at random z coordinate along crystal length and at a position
   // known to be outside of the crystal.
   particleGun->
-    SetParticlePosition(G4ThreeVector(0.0, 0.0, -crystalZHalfLength*1.1));
+    SetParticlePosition(G4ThreeVector(0.0, 0.0, 0.0));
     //SetParticlePosition(G4ThreeVector(0.0, crystalXYHalfLength*1.8, gunZ0));
-  particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0, 0.0, 1.0));
+  particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0, 0.0, -1.0));
   particleGun->GeneratePrimaryVertex(anEvent);
 }

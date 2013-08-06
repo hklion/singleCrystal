@@ -64,6 +64,6 @@ class singCrysPSEnergy : public G4VPrimitiveScorer
 
   private:
       G4int HCID;
-      G4THitsMap<G4double>* EvtMap;
+      G4THitsMap<G4double>* EvtMapEnergy;
 };
 #endif
