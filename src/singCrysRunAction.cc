@@ -41,6 +41,6 @@ void singCrysRunAction::EndOfRunAction(const G4Run* aRun)
   analysisManager->CloseFile();
   singCrysRun* theRun = (singCrysRun*)aRun;
   theRun->printEDepHits();
-  theRun->printSurfCurrHits();
+  theRun->printNPhotonsHits();
   delete G4AnalysisManager::Instance();
 }

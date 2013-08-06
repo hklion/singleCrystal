@@ -214,7 +214,7 @@ void singCrysPhysicsList::ConstructOp()
   theBoundaryProcess           = new G4OpBoundaryProcess();
   theSpecialCutsProcess        = new G4UserSpecialCuts();
 
-  SetVerbose(1);
+  SetVerbose(0);
 
   theCerenkovProcess->SetMaxNumPhotonsPerStep(20);
   theCerenkovProcess->SetMaxBetaChangePerStep(10.0);

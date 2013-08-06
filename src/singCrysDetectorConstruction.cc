@@ -14,7 +14,7 @@
 #include "G4VPrimitiveScorer.hh"
 #include "G4PSFlatSurfaceCurrent.hh"
 #include "G4PSEnergyDeposit.hh"
-#include "singCrysPSEnergy.hh"
+#include "singCrysPSNPhotons.hh"
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
@@ -397,12 +397,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     new G4MultiFunctionalDetector(siliconAPDname);
   // Add scorers
   G4VPrimitiveScorer* primitive;
-  primitive = new singCrysPSEnergy("eDep");
+  primitive = new G4PSEnergyDeposit("eDep");
   SiliconMFD->RegisterPrimitive(primitive);
-  // Gives the number of tracks that pass through the -Z surface of the solid.
-  // The second argument tells the scorer to record tracks going in to the
-  // solid (1). 0 means both in and out. 2 means out.
-  primitive = new G4PSFlatSurfaceCurrent("FSC", 2);
+  primitive = new singCrysPSNPhotons("nPhotons");
   SiliconMFD->RegisterPrimitive(primitive);
   // Assign detector to silicon logical volume
   G4SDManager::GetSDMpointer()->AddNewDetector(SiliconMFD);

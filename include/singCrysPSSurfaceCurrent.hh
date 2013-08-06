@@ -27,43 +27,75 @@
 // $Id$
 //
 
-#ifndef singCyrsPSEnergy_h
-#define singCrysPSEnergy_h 1
+#ifndef singCrysPSSurfaceCurrent_h
+#define singCrysPSSurfaceCurrent_h 1
 
 #include "G4VPrimitiveScorer.hh"
 #include "G4THitsMap.hh"
 
+#include "G4Box.hh"
+#include "G4PSDirectionFlag.hh"
 ////////////////////////////////////////////////////////////////////////////////
-// Description:
-//   This is a primitive scorer class for scoring energy deposit.
-// 
-// Created: 2005-11-14  Tsukasa ASO, Akinori Kimura
+// (Description)
+//   This is a primitive scorer class for scoring Surface Current.
+//  Current version assumes only for G4Box shape, and the surface
+//  is defined at the -Z plane of the box.
+//   The current is given in the unit of area. 
+//    e.g.  (Number of tracks)/mm2.
+//
+// Surface is defined at the -Z surface.
+// Direction                  -Z   +Z
+//   0  IN || OUT            ->|<-  |      fCurrent_InOut
+//   1  IN                   ->|    |      fCurrent_In
+//   2  OUT                    |<-  |      fCurrent_Out
+//
+//
+// Created: 2005-11-14  Tsukasa ASO, Akinori Kimura.
+// 17-Nov-2005 T.Aso, Bug fix for area definition.
+// 31-Mar-2007 T.Aso, Add option for normalizing by the area.
 // 2010-07-22   Introduce Unit specification.
 // 
 ///////////////////////////////////////////////////////////////////////////////
 
-class singCrysPSEnergy : public G4VPrimitiveScorer
+class singCrysPSSurfaceCurrent : public G4VPrimitiveScorer
 {
  
- public: // with description
-      singCrysPSEnergy(G4String name, G4int depth=0); // default unit
-      singCrysPSEnergy(G4String name, const G4String& unit, G4int depth=0);
-      virtual ~singCrysPSEnergy();
+  public: // with description
+      singCrysPSSurfaceCurrent(G4String name ,G4int direction, G4int depth=0);
+      singCrysPSSurfaceCurrent(G4String name ,G4int direction, 
+			     const G4String& unit, G4int depth=0);
+      virtual ~singCrysPSSurfaceCurrent();
 
- protected: // with description
+      // Scoring options
+      inline void Weighted(G4bool flg=true) { weighted = flg; }
+      // Multiply track weight
+      inline void DivideByArea(G4bool flg=true) { divideByArea = flg; }
+      // Divided By Area
+
+  protected: // with description
       virtual G4bool ProcessHits(G4Step*,G4TouchableHistory*);
+      G4int IsSelectedSurface(G4Step*,G4Box*);
 
- public: 
+  public: 
       virtual void Initialize(G4HCofThisEvent*);
       virtual void EndOfEvent(G4HCofThisEvent*);
       virtual void clear();
       virtual void DrawAll();
       virtual void PrintAll();
 
-      virtual void SetUnit(const G4String& unit);
+      virtual void SetUnit(const G4String& unit);    
+
+  protected:
+      virtual void DefineUnitAndCategory();
 
   private:
-      G4int HCID;
-      G4THitsMap<G4double>* EvtMapEnergy;
+      G4int  HCID;
+      G4int  fDirection;
+      G4THitsMap<G4double>* EvtMap;
+      G4bool weighted;
+      G4bool divideByArea;
+
 };
+
 #endif
+

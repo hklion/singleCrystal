@@ -26,71 +26,73 @@
 //
 // $Id$
 //
-// singCrysPSEnergy
-#include "singCrysPSEnergy.hh"
+// singCrysPSNPhotons
+#include "singCrysPSNPhotons.hh"
 #include "G4UnitsTable.hh"
 #include "Randomize.hh"
 ////////////////////////////////////////////////////////////////////////////////
 // Description:
-//   This is a primitive scorer class for scoring energy deposit.
+//   This is a primitive scorer class for scoring the number of energy
+//   deposits.
 // 
 // Created: 2005-11-14  Tsukasa ASO, Akinori Kimura.
 // 2010-07-22   Introduce Unit specification.
 // 
 ///////////////////////////////////////////////////////////////////////////////
 
-singCrysPSEnergy::singCrysPSEnergy(G4String name, G4int depth)
+singCrysPSNPhotons::singCrysPSNPhotons(G4String name, G4int depth)
   :G4VPrimitiveScorer(name,depth),HCID(-1) 
 {
   SetUnit("MeV");
 }
 
-singCrysPSEnergy::singCrysPSEnergy(G4String name, const G4String& unit, 
+singCrysPSNPhotons::singCrysPSNPhotons(G4String name, const G4String& unit, 
 				     G4int depth)
   :G4VPrimitiveScorer(name,depth),HCID(-1)
 {
   SetUnit(unit);
 }
 
-singCrysPSEnergy::~singCrysPSEnergy()
+singCrysPSNPhotons::~singCrysPSNPhotons()
 {;}
 
-G4bool singCrysPSEnergy::ProcessHits(G4Step* aStep,G4TouchableHistory*)
+G4bool singCrysPSNPhotons::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 {
   G4double edep = aStep->GetTotalEnergyDeposit();
   if ( edep == 0. ) return FALSE;
-  edep *= aStep->GetPreStepPoint()->GetWeight(); // (Particle Weight)
-  G4int  index = GetIndex(aStep);
-  EvtMapEnergy->add(index,edep);
+  // If energy has been deposited, add to the photon count
+  G4int index = GetIndex(aStep);
+  G4double photonCount = 1.;
+  EvtMap->add(index, photonCount);
   return TRUE;
 }
 
-void singCrysPSEnergy::Initialize(G4HCofThisEvent* HCE)
+void singCrysPSNPhotons::Initialize(G4HCofThisEvent* HCE)
 {
-  EvtMapEnergy = new G4THitsMap<G4double>(GetMultiFunctionalDetector()->GetName(),
+  EvtMap = new G4THitsMap<G4double>(GetMultiFunctionalDetector()->GetName(),
 				    GetName());
   if(HCID < 0) {HCID = GetCollectionID(0);}
-  HCE->AddHitsCollection(HCID, (G4VHitsCollection*)EvtMapEnergy);
+  HCE->AddHitsCollection(HCID, (G4VHitsCollection*)EvtMap);
 }
 
-void singCrysPSEnergy::EndOfEvent(G4HCofThisEvent*)
+void singCrysPSNPhotons::EndOfEvent(G4HCofThisEvent*)
 {;}
 
-void singCrysPSEnergy::clear()
+void singCrysPSNPhotons::clear()
 {
-  EvtMapEnergy->clear();
+  EvtMap->clear();
 }
 
-void singCrysPSEnergy::DrawAll()
+void singCrysPSNPhotons::DrawAll()
 {;}
 
-void singCrysPSEnergy::PrintAll()
+void singCrysPSNPhotons::PrintAll()
 {
   G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
   G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMapEnergy->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMapEnergy->GetMap()->begin();
-  for(; itr != EvtMapEnergy->GetMap()->end(); itr++) {
+  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
+  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
+  for(; itr != EvtMap->GetMap()->end(); itr++) {
     G4cout << "  copy no.: " << itr->first
 	   << "  energy deposit: " 
 	   << *(itr->second)/GetUnitValue()
@@ -99,7 +101,7 @@ void singCrysPSEnergy::PrintAll()
   }
 }
 
-void singCrysPSEnergy::SetUnit(const G4String& unit)
+void singCrysPSNPhotons::SetUnit(const G4String& unit)
 {
 	CheckAndSetUnit(unit,"Energy");
 }
