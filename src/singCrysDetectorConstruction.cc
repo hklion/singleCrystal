@@ -123,7 +123,9 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
     3.543*eV};
   G4double Efficiency[nEntries] = {0.69, 0.78, 0.82, 0.85, 0.85, 0.86, 0.85,
     0.84, 0.81, 0.75, 0.65, 0.50};
-  G4double Reflectivity[nEntries] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  //G4double Efficiency[nEntries] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+  G4double Reflectivity[nEntries] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+    0., 0.};
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
   table->AddProperty("EFFICIENCY", PhotonEnergy, Efficiency, nEntries);
   table->AddProperty("REFLECTIVITY", PhotonEnergy, Reflectivity, nEntries);
@@ -174,6 +176,22 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
   return table;
 }
 
+G4MaterialPropertiesTable* singCrysDetectorConstruction::
+  generateCeramicTable()
+{
+  const G4int nEntries = 1;
+  // Define photon energy
+  G4double PhotonEnergy[nEntries] = {3.*eV};
+  // Define reflectivity
+  G4double Reflectivity[nEntries] = {0.9};
+  G4double Efficiency[nEntries] = {0.};
+  // Construct table and add reflectivity property
+  G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
+  table->AddProperty("REFLECTIVITY", PhotonEnergy, Reflectivity, nEntries);
+  table->AddProperty("EFFICIENCY", PhotonEnergy, Efficiency, nEntries);
+  return table;
+}
+
 // Constructs and returns material properties table for a material of
 // arbitrary constant refractive index
 G4MaterialPropertiesTable* singCrysDetectorConstruction::
@@ -205,7 +223,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double crysSizeZ = 11*cm;       // Z axis length
   G4int crysNumSides = 4;           // Number of sides
   G4double layer1Thick = 100*um;    // Thickness of layer surrounding crystal
-  G4double layer2Thick = 1.*mm;     // Thickness of layer surrounding layer1
+  G4double layer2Thick = 0.*mm;     // Thickness of layer surrounding layer1
   G4double AlCoating1Z = 0.1*mm;    // Thickness of top Al APD case coating
   G4double AlCoating2Z = 0.5*mm;    // Thickenss of bottom Al APD case coating
   // Parameters for APD
@@ -364,23 +382,35 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     G4LogicalBorderSurface("CrysAlSurface", physCrys, physLayer1, OpCrysAlSurface);
 
   // Define solids for APD
-  G4Box* solidCasing = new G4Box("CasingFull",
+  G4Box* solidAPD = new G4Box("APD",
     casingX * 0.5, casingY * 0.5, casingZ * 0.5);
   G4Box* solidEpoxy = new G4Box("Epoxy",
     epoxyX * 0.5, epoxyY * 0.5, epoxyZ * 0.5);
   G4Box* solidSilicon = new G4Box("SiDetector",
     siliconXY * 0.5, siliconXY * 0.5, siliconZ * 0.5);
+  G4ThreeVector translEpoxy = G4ThreeVector(0.0*mm ,0.4*mm,
+    0.5 * (casingZ - epoxyZ));
+  G4ThreeVector translSilicon = G4ThreeVector(0.0*mm, 0.4*mm,
+    0.5 * (casingZ - siliconZ) - epoxyZ);
+  G4SubtractionSolid* solidCasingMid = new G4SubtractionSolid("CasingMid",
+    solidAPD, solidEpoxy, 0, translEpoxy);
+  G4SubtractionSolid* solidCasing = new G4SubtractionSolid("Casing",
+    solidCasingMid, solidSilicon, 0, translSilicon);
 
   // Define materials for APD
   G4Material* APDMat = nist->FindOrBuildMaterial("G4_AIR");
   APDMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
   G4Material* casingMat = nist->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
+  casingMat->SetMaterialPropertiesTable(generateCeramicTable());
   G4Material* epoxyMat = nist->FindOrBuildMaterial("Epoxy");
   epoxyMat->SetMaterialPropertiesTable(generateRIndexTable(1.5));
   G4Material* siliconMat = nist->FindOrBuildMaterial("G4_Si");
   siliconMat->SetMaterialPropertiesTable(generateSiTable());
 
 // Define logical volumes
+  G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
+                                                  APDMat,
+                                                  "APD");
   G4LogicalVolume* logicCasing = new G4LogicalVolume(solidCasing,
                                                      casingMat,
                                                      "Casing");
@@ -406,31 +436,39 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   //logicSilicon->SetSensitiveDetector(SiliconMFD);
   
   // Place epoxy and silicon in casing.
-  G4double epoxyPlaceZ = 0.5 * (casingZ - epoxyZ);
   G4double siliconPlaceZ = (0.5 * (casingZ - siliconZ) - epoxyZ);
   G4VPhysicalVolume* physEpoxy = new G4PVPlacement(0,
-                    G4ThreeVector(0.0*mm ,0.4*mm, epoxyPlaceZ),
+                    translEpoxy,
                     logicEpoxy,
                     "Epoxy",
-                    logicCasing,
+                    logicAPD,
                     false,
                     0,
                     checkOverlaps);
   G4VPhysicalVolume* physSilicon = new G4PVPlacement(0,
-                    G4ThreeVector(0.0*mm, 0.4*mm, siliconPlaceZ),
+                    translSilicon,
                     logicSilicon,
                     "Silicon",
+                    logicAPD,
+                    false,
+                    0,
+                    checkOverlaps);
+  G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
+                    G4ThreeVector(),
                     logicCasing,
+                    "Casing",
+                    logicAPD,
                     false,
                     0,
                     checkOverlaps);
 
-  // Make a surface between the silicon and epoxy
-  //G4OpticalSurface* optEpoxySilicon = new G4OpticalSurface("optEpoxySilicon");
-  //optEpoxySilicon->SetModel(glisur);
-  //optEpoxySilicon->SetFinish(polished);
-  //optEpoxySilicon->SetType(dielectric_metal);
-  //G4LogicalBorderSurface* borderEpoxySilicon = new G4LogicalBorderSurface("optEpoxySilicon", physEpoxy, physSilicon, optEpoxySilicon);
+  // Make a surface surounding the casing with a certain relfectivity
+  G4OpticalSurface* optCasing = new G4OpticalSurface("optCasing");
+  optCasing->SetModel(glisur);
+  optCasing->SetFinish(polished);
+  optCasing->SetType(dielectric_metal);
+  optCasing->SetMaterialPropertiesTable(generateCeramicTable());
+  G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing", logicCasing, optCasing);
 
   // Make skin surface on silicon with a certain efficiency.
   G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
@@ -464,7 +502,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                         solidAlAPDCaseFull, solidLayer2, 0,
                                         translCrysAPDCase);
   G4SubtractionSolid* solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
-                                      solidAlAPDCaseMid, solidCasing, 0,
+                                      solidAlAPDCaseMid, solidAPD, 0,
                                       G4ThreeVector(0.0, 0.0, -casingPlaceZ));
   // Generate aluminum material
   G4Material* APDAlCaseMat = nist->FindOrBuildMaterial("G4_Al");
@@ -524,10 +562,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Place APD casing in the world volume
   G4double APDPlaceZ = -(0.5 * (crysSizeZ + casingZ) +
     AlCoating1Z + AlCoating2Z);
-  G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
+  G4VPhysicalVolume* physAPD = new G4PVPlacement(0,
                     G4ThreeVector(0.0*mm, 0.0*mm, APDPlaceZ),
-                    logicCasing,
-                    "Casing",
+                    logicAPD,
+                    "APD",
                     logicWorld,
                     false,
                     0,
