@@ -45,7 +45,6 @@ void singCrysDetectorConstruction::DefineMaterials()
   G4Element* Si = nist->FindOrBuildElement("Si", isotopes);
   G4Element* O = nist->FindOrBuildElement("O", isotopes);
 
-  // TODO: check density
   G4Material* LYSO = new G4Material("LYSO", 7.4*g/cm3, 4);
   // For now, assume that x = 0.2. Making all subscripts integers...
   LYSO->AddElement(Lu, 9);
@@ -219,7 +218,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
-  G4double crysSideLength = 3.*cm;  // Length along flats
+  G4double crysSideLength = 3.0*cm;  // Length along flats
   G4double crysSizeZ = 11*cm;       // Z axis length
   G4int crysNumSides = 4;           // Number of sides
   G4double layer1Thick = 100*um;    // Thickness of layer surrounding crystal
@@ -374,9 +373,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Now define the aluminum-crystal boundary.
   G4OpticalSurface* OpCrysAlSurface = new G4OpticalSurface("CrysAlSurface");
-  OpCrysAlSurface->SetModel(glisur);
+  OpCrysAlSurface->SetModel(unified);
   OpCrysAlSurface->SetType(dielectric_metal);
-  OpCrysAlSurface->SetFinish(polished);
+  OpCrysAlSurface->SetFinish(ground);
+  OpCrysAlSurface->SetSigmaAlpha(0.1);
   
   G4LogicalBorderSurface* CrysAlSurface = new
     G4LogicalBorderSurface("CrysAlSurface", physCrys, physLayer1, OpCrysAlSurface);
@@ -464,8 +464,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Make a surface surounding the casing with a certain relfectivity
   G4OpticalSurface* optCasing = new G4OpticalSurface("optCasing");
-  optCasing->SetModel(glisur);
-  optCasing->SetFinish(polished);
+  optCasing->SetModel(unified);
+  optCasing->SetFinish(ground);
+  optCasing->SetSigmaAlpha(0.2);
   optCasing->SetType(dielectric_metal);
   optCasing->SetMaterialPropertiesTable(generateCeramicTable());
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing", logicCasing, optCasing);

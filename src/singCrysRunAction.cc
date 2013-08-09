@@ -29,7 +29,7 @@ void singCrysRunAction::BeginOfRunAction(const G4Run* aRun)
   analysisManager->OpenFile(fileName);
   analysisManager->SetFirstHistoId(1);
   // Create histograms
-  analysisManager->CreateH1("edep", "Energy deposited", 100, 0., 0.0015);
+  analysisManager->CreateH1("edep", "Energy deposited", 100, 0., 0.001);
   analysisManager->CreateH1("nphotons", "Number of Photons", 100, 0., 500);
 }
 
