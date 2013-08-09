@@ -31,6 +31,8 @@ void singCrysRunAction::BeginOfRunAction(const G4Run* aRun)
   // Create histograms
   analysisManager->CreateH1("edep", "Energy deposited", 100, 0., 0.001);
   analysisManager->CreateH1("nphotons", "Number of Photons", 100, 0., 500);
+  analysisManager->CreateH1("crysEdep", "Energy deposited in crystal", 100,
+    0., 0.7);
 }
 
 // At the end of run, print the run's energy deposition and current tally.

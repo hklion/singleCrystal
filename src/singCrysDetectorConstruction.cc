@@ -425,14 +425,19 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4String siliconAPDname = "SiliconAPD";
   G4MultiFunctionalDetector* SiliconMFD = 
     new G4MultiFunctionalDetector(siliconAPDname);
+  G4MultiFunctionalDetector* CrystalMFD = new G4MultiFunctionalDetector("crys");
   // Add scorers
   G4VPrimitiveScorer* primitive;
   primitive = new G4PSEnergyDeposit("eDep");
   SiliconMFD->RegisterPrimitive(primitive);
   primitive = new singCrysPSNPhotons("nPhotons");
   SiliconMFD->RegisterPrimitive(primitive);
+  primitive = new G4PSEnergyDeposit("crysEDep");
+  CrystalMFD->RegisterPrimitive(primitive);
   // Assign detector to silicon logical volume
   G4SDManager::GetSDMpointer()->AddNewDetector(SiliconMFD);
+  G4SDManager::GetSDMpointer()->AddNewDetector(CrystalMFD);
+  logicCrys->SetSensitiveDetector(CrystalMFD);
   //logicSilicon->SetSensitiveDetector(SiliconMFD);
   
   // Place epoxy and silicon in casing.

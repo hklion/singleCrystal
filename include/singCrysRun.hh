@@ -21,9 +21,10 @@ class singCrysRun : public G4Run
 
   private:
     G4int nEvent;
-    G4int totalEDepID, totalNPhotonsID;
+    G4int totalEDepID, totalNPhotonsID, totalCrysEDepID;
     G4THitsMap<G4double> totalEDep;
     G4THitsMap<G4double> totalNPhotons;
+    G4THitsMap<G4double> totalCrysEDep;
   public:
     void printEDepHits();
     void printNPhotonsHits();
