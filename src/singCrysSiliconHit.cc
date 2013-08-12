@@ -1,4 +1,4 @@
-#include "singCrysTrackerHit.hh"
+#include "singCrysSiliconHit.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -7,10 +7,10 @@
 
 #include <iomanip>
 
-G4Allocator<singCrysTrackerHit> singCrysTrackerHitAllocator;
+G4Allocator<singCrysSiliconHit> singCrysSiliconHitAllocator;
 
 // Empty constructor
-singCrysTrackerHit::singCrysTrackerHit()
+singCrysSiliconHit::singCrysSiliconHit()
   : G4VHit(),
     fTrackID(-1),
     fAPDNb(-1),
@@ -19,10 +19,10 @@ singCrysTrackerHit::singCrysTrackerHit()
 {}
 
 // Destructor
-singCrysTrackerHit::~singCrysTrackerHit() {}
+singCrysSiliconHit::~singCrysSiliconHit() {}
 
-// Constructor from other 'singCrysTrackerHit' object
-singCrysTrackerHit::singCrysTrackerHit(const singCrysTrackerHit& right)
+// Constructor from other 'singCrysSiliconHit' object
+singCrysSiliconHit::singCrysSiliconHit(const singCrysSiliconHit& right)
   : G4VHit()
 {
   fTrackID = right.fTrackID;
@@ -32,8 +32,8 @@ singCrysTrackerHit::singCrysTrackerHit(const singCrysTrackerHit& right)
 }
 
 // Overloading for assignment operator
-const singCrysTrackerHit& singCrysTrackerHit::
-  operator=(const singCrysTrackerHit& right)
+const singCrysSiliconHit& singCrysSiliconHit::
+  operator=(const singCrysSiliconHit& right)
 {
   fTrackID = right.fTrackID;
   fAPDNb = right.fAPDNb;
@@ -43,13 +43,13 @@ const singCrysTrackerHit& singCrysTrackerHit::
 }
 
 // Overloading for equals operator
-G4int singCrysTrackerHit::operator==(const singCrysTrackerHit& right) const
+G4int singCrysSiliconHit::operator==(const singCrysSiliconHit& right) const
 {
   return ( this == &right ) ? 1 : 0;
 }
 
 // Draw hit
-void singCrysTrackerHit::Draw()
+void singCrysSiliconHit::Draw()
 {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if (pVVisManager)
@@ -65,7 +65,7 @@ void singCrysTrackerHit::Draw()
 }
 
 // Print properties of hit
-void singCrysTrackerHit::Print()
+void singCrysSiliconHit::Print()
 {
   G4cout
     << "  trackID: " << fTrackID << " APDNb: " << fAPDNb

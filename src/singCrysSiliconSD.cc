@@ -1,4 +1,4 @@
-#include "singCrysTrackerSD.hh"
+#include "singCrysSiliconSD.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
 #include "G4ThreeVector.hh"
@@ -6,7 +6,7 @@
 #include "G4ios.hh"
 
 // Constructor
-singCrysTrackerSD::singCrysTrackerSD(const G4String& name,
+singCrysSiliconSD::singCrysSiliconSD(const G4String& name,
                                      const G4String& hitsCollectionName)
   : G4VSensitiveDetector(name),
     fHitsCollection(NULL)
@@ -15,14 +15,14 @@ singCrysTrackerSD::singCrysTrackerSD(const G4String& name,
 }
 
 // Destructor
-singCrysTrackerSD::~singCrysTrackerSD()
+singCrysSiliconSD::~singCrysSiliconSD()
 {}
 
 // Initializes the hits collection associated with the detector
-void singCrysTrackerSD::Initialize(G4HCofThisEvent* hce)
+void singCrysSiliconSD::Initialize(G4HCofThisEvent* hce)
 {
   // Create hits collection
-  fHitsCollection = new singCrysTrackerHitsCollection(SensitiveDetectorName,
+  fHitsCollection = new singCrysSiliconHitsCollection(SensitiveDetectorName,
     collectionName[0]);
 
   // Add this collection in hce
@@ -32,13 +32,13 @@ void singCrysTrackerSD::Initialize(G4HCofThisEvent* hce)
 }
 
 // Processes the hits in the volume
-G4bool singCrysTrackerSD::ProcessHits(G4Step* aStep,
+G4bool singCrysSiliconSD::ProcessHits(G4Step* aStep,
                                       G4TouchableHistory*)
 {
   // energy deposit
   G4double edep = aStep->GetTotalEnergyDeposit();
   if (edep == 0.) return false;
-  singCrysTrackerHit* newHit = new singCrysTrackerHit();
+  singCrysSiliconHit* newHit = new singCrysSiliconHit();
   newHit->SetTrackID (aStep->GetTrack()->GetTrackID());
   newHit->SetAPDNb(aStep->GetPreStepPoint()->GetTouchableHandle()
                                            ->GetCopyNumber());
@@ -51,7 +51,7 @@ G4bool singCrysTrackerSD::ProcessHits(G4Step* aStep,
 }
 
 // Outputs information about the event
-void singCrysTrackerSD::EndOfEvent(G4HCofThisEvent*)
+void singCrysSiliconSD::EndOfEvent(G4HCofThisEvent*)
 {
   if (verboseLevel > 1)
   {
