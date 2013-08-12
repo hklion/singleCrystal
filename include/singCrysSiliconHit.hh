@@ -10,6 +10,9 @@
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4ThreeVector.hh"
+#include <fstream>
+
+using namespace std;
 
 class singCrysSiliconHit : public G4VHit
 {
@@ -46,6 +49,7 @@ class singCrysSiliconHit : public G4VHit
     G4int fAPDNb;
     G4double fEdep;
     G4ThreeVector fPos;
+    ofstream outfile;
 };
 
 typedef G4THitsCollection<singCrysSiliconHit> singCrysSiliconHitsCollection;
