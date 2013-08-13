@@ -8,7 +8,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
-#include "singCrysTrackerSD.hh"
+#include "singCrysSiliconSD.hh"
 #include "G4UserLimits.hh"
 #include "G4MultiFunctionalDetector.hh"
 #include "G4VPrimitiveScorer.hh"
@@ -431,20 +431,21 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                       siliconMat,
                                                       "Silicon");
   
-  // Add multifunctional detector and scorers
-  G4String siliconAPDname = "SiliconAPD";
-  G4MultiFunctionalDetector* SiliconMFD = 
-    new G4MultiFunctionalDetector(siliconAPDname);
-  // Add scorers
-  G4VPrimitiveScorer* primitive;
-  primitive = new G4PSEnergyDeposit("eDep");
-  SiliconMFD->RegisterPrimitive(primitive);
-  primitive = new singCrysPSNPhotons("nPhotons");
-  SiliconMFD->RegisterPrimitive(primitive);
-  // Assign detector to silicon logical volume
-  G4SDManager::GetSDMpointer()->AddNewDetector(SiliconMFD);
-  //logicSilicon->SetSensitiveDetector(SiliconMFD);
-  
+  // Define a sensitive detector and assign it to epoxy.
+  singCrysSiliconSD* siliconSD = new singCrysSiliconSD("singCrys/siliconSD",
+    "SiliconHitsCollection");
+  G4SDManager::GetSDMpointer()->AddNewDetector(siliconSD);
+  logicEpoxy->SetSensitiveDetector(siliconSD);
+
+  // Make skin surface on silicon with a certain efficiency.
+  G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
+  optSilicon->SetModel(glisur);
+  optSilicon->SetFinish(polished);
+  optSilicon->SetType(dielectric_metal);
+  optSilicon->SetMaterialPropertiesTable(generateSiSurfaceTable());
+  G4LogicalSurface* skinSilicon = new G4LogicalSkinSurface("skinSilicon",
+    logicSilicon, optSilicon);
+
   // Place epoxy and silicon in casing.
   G4double siliconPlaceZ = (0.5 * (casingZ - siliconZ) - epoxyZ);
   G4VPhysicalVolume* physEpoxy = new G4PVPlacement(0,
@@ -481,15 +482,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   optCasing->SetMaterialPropertiesTable(generateCeramicTable());
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing", logicCasing, optCasing);
 
-  // Make skin surface on silicon with a certain efficiency.
-  G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
-  optSilicon->SetModel(glisur);
-  optSilicon->SetFinish(polished);
-  optSilicon->SetType(dielectric_metal);
-  optSilicon->SetMaterialPropertiesTable(generateSiSurfaceTable());
-  G4LogicalSkinSurface* skinSilicon = new G4LogicalSkinSurface("skinSilicon",
-    logicSilicon, optSilicon);
-  logicEpoxy->SetSensitiveDetector(SiliconMFD);
   // Make aluminum casing for APD. It is made by making a G4Polyhedra with
   // the same number of sides as the crystal. Then the translated cyrstal
   // is subtracted in order to make a dent for the coatings and crystal.

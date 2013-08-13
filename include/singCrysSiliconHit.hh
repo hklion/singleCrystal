@@ -1,26 +1,26 @@
-// Tracker hit class.
+// Silicon hit class.
 //
 // Defines data members to store trackID, APDNb, energy deposit and position
 // of particles in a selected volume
 
-#ifndef singCrysTrackerHit_h
-#define singCrysTrackerHit_h 1
+#ifndef singCrysSiliconHit_h
+#define singCrysSiliconHit_h 1
 
 #include "G4VHit.hh"
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4ThreeVector.hh"
 
-class singCrysTrackerHit : public G4VHit
+class singCrysSiliconHit : public G4VHit
 {
   public:
-    singCrysTrackerHit();
-    singCrysTrackerHit(const singCrysTrackerHit& right);
-    virtual ~singCrysTrackerHit();
+    singCrysSiliconHit();
+    singCrysSiliconHit(const singCrysSiliconHit& right);
+    virtual ~singCrysSiliconHit();
 
     // operators
-    const singCrysTrackerHit& operator=(const singCrysTrackerHit& right);
-    G4int operator==(const singCrysTrackerHit& right) const;
+    const singCrysSiliconHit& operator=(const singCrysSiliconHit& right);
+    G4int operator==(const singCrysSiliconHit& right) const;
 
     inline void* operator new(size_t);
     inline void operator delete(void*);
@@ -48,20 +48,20 @@ class singCrysTrackerHit : public G4VHit
     G4ThreeVector fPos;
 };
 
-typedef G4THitsCollection<singCrysTrackerHit> singCrysTrackerHitsCollection;
+typedef G4THitsCollection<singCrysSiliconHit> singCrysSiliconHitsCollection;
 
-extern G4Allocator<singCrysTrackerHit> singCrysTrackerHitAllocator;
+extern G4Allocator<singCrysSiliconHit> singCrysSiliconHitAllocator;
 
-inline void* singCrysTrackerHit::operator new(size_t)
+inline void* singCrysSiliconHit::operator new(size_t)
 {
   void *hit;
-  hit = (void *) singCrysTrackerHitAllocator.MallocSingle();
+  hit = (void *) singCrysSiliconHitAllocator.MallocSingle();
   return hit;
 }
 
-inline void singCrysTrackerHit::operator delete(void *hit)
+inline void singCrysSiliconHit::operator delete(void *hit)
 {
-  singCrysTrackerHitAllocator.FreeSingle((singCrysTrackerHit*) hit);
+  singCrysSiliconHitAllocator.FreeSingle((singCrysSiliconHit*) hit);
 }
 
 #endif

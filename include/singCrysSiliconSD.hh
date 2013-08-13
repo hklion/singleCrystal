@@ -1,21 +1,21 @@
 // User-defined sensitive detector class
 
-#ifndef singCrysTrackerSD_h
-#define singCrysTrackerSD_h 1
+#ifndef singCrysSiliconSD_h
+#define singCrysSiliconSD_h 1
 
 #include "G4VSensitiveDetector.hh"
-#include "singCrysTrackerHit.hh"
+#include "singCrysSiliconHit.hh"
 #include <vector>
 
 class G4Step;
 class G4HCofThisEvent;
 
-class singCrysTrackerSD : public G4VSensitiveDetector
+class singCrysSiliconSD : public G4VSensitiveDetector
 {
   public:
-    singCrysTrackerSD(const G4String& name,
+    singCrysSiliconSD(const G4String& name,
                const G4String& hitsCollectionName);
-    virtual ~singCrysTrackerSD();
+    virtual ~singCrysSiliconSD();
 
     // methods from base classes
     virtual void Initialize(G4HCofThisEvent* hitCollection);
@@ -23,7 +23,7 @@ class singCrysTrackerSD : public G4VSensitiveDetector
     virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
 
   private:
-    singCrysTrackerHitsCollection* fHitsCollection;
+    singCrysSiliconHitsCollection* fHitsCollection;
 };
 
 #endif
