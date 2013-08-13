@@ -17,13 +17,11 @@ singCrysSiliconHit::singCrysSiliconHit()
     fEdep(0.),
     fPos(G4ThreeVector())
 {
-  outfile.open("singleCrystal.out");
 }
 
 // Destructor
 singCrysSiliconHit::~singCrysSiliconHit()
 {
-  outfile.close();
 }
 
 // Constructor from other 'singCrysSiliconHit' object
@@ -34,8 +32,6 @@ singCrysSiliconHit::singCrysSiliconHit(const singCrysSiliconHit& right)
   fAPDNb = right.fAPDNb;
   fEdep = right.fEdep;
   fPos = right.fPos;
-  (right.outfile).close();
-  outfile.open("singleCrystal.out".c_str());
 }
 
 // Overloading for assignment operator
@@ -46,8 +42,6 @@ const singCrysSiliconHit& singCrysSiliconHit::
   fAPDNb = right.fAPDNb;
   fEdep = right.fEdep;
   fPos = right.fPos;
-  (right.outfile).close();
-  outfile.open("singleCrystal.out".c_str());
   return *this;
 }
 
@@ -76,7 +70,7 @@ void singCrysSiliconHit::Draw()
 // Print properties of hit
 void singCrysSiliconHit::Print()
 {
-  outfile
+  G4cout
     << "  trackID: " << fTrackID << " APDNb: " << fAPDNb
     << " Edep: "
     << std::setw(7) << G4BestUnit(fEdep, "Energy")
