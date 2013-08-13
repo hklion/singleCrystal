@@ -222,7 +222,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double crysSizeZ = 11*cm;       // Z axis length
   G4int crysNumSides = 4;           // Number of sides
   G4double layer1Thick = 100*um;    // Thickness of layer surrounding crystal
-  G4double layer2Thick = 0.*mm;     // Thickness of layer surrounding layer1
+  G4double layer2Thick = 100.*um;     // Thickness of layer surrounding layer1
   G4double AlCoating1Z = 0.1*mm;    // Thickness of top Al APD case coating
   G4double AlCoating2Z = 0.5*mm;    // Thickenss of bottom Al APD case coating
   // Parameters for APD
@@ -245,10 +245,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Define materials for crystals and layering
   G4Material* crysMat = nist->FindOrBuildMaterial("LYSO");
   crysMat->SetMaterialPropertiesTable(generateLYSOTable());
-  G4Material* layer1Mat = nist->FindOrBuildMaterial("G4_Al");
-  layer1Mat->SetMaterialPropertiesTable(generateAlTable());
-  G4Material* layer2Mat = nist->FindOrBuildMaterial("G4_Galactic");
-  layer2Mat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
+  G4Material* layer1Mat = nist->FindOrBuildMaterial("G4_Galactic");
+  layer1Mat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
+  G4Material* layer2Mat = nist->FindOrBuildMaterial("G4_Al");
+  layer2Mat->SetMaterialPropertiesTable(generateAlTable());
   // Check overlaps in volumes
   G4bool checkOverlaps = true;
 
@@ -371,15 +371,25 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                     0,                // copy number
                     checkOverlaps);   // overlaps checking
 
-  // Now define the aluminum-crystal boundary.
-  G4OpticalSurface* OpCrysAlSurface = new G4OpticalSurface("CrysAlSurface");
-  OpCrysAlSurface->SetModel(unified);
-  OpCrysAlSurface->SetType(dielectric_metal);
-  OpCrysAlSurface->SetFinish(ground);
-  OpCrysAlSurface->SetSigmaAlpha(0.1);
-  
-  G4LogicalBorderSurface* CrysAlSurface = new
-    G4LogicalBorderSurface("CrysAlSurface", physCrys, physLayer1, OpCrysAlSurface);
+  // Now define the aluminum-layer1 boundary.
+  G4OpticalSurface* OpLayer1AlSurface = new G4OpticalSurface("Layer1AlSurface");
+  OpLayer1AlSurface->SetModel(unified);
+  OpLayer1AlSurface->SetType(dielectric_metal);
+  OpLayer1AlSurface->SetFinish(ground);
+  OpLayer1AlSurface->SetSigmaAlpha(0.1);
+  G4LogicalBorderSurface* Layer1AlSurface = new
+    G4LogicalBorderSurface("Layer1AlSurface", physLayer1, physLayer2,
+                           OpLayer1AlSurface);
+
+  // Define the aluminum-world boundary.
+  G4OpticalSurface* OpWorldAlSurface = new G4OpticalSurface("WorldAlSurface");
+  OpWorldAlSurface->SetModel(unified);
+  OpWorldAlSurface->SetModel(dielectric_metal);
+  OpWorldAlSurface->SetFinish(ground);
+  OpWorldAlSurface->SetSigmaAlpha(0.1);
+  G4LogicalBorderSurface* WorldAlSurface = new
+    G4LogicalBorderSurface("WorldAlSurface", physWorld, physLayer2,
+                           OpWorldAlSurface);
 
   // Define solids for APD
   G4Box* solidAPD = new G4Box("APD",
