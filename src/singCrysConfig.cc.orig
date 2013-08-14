@@ -1,0 +1,56 @@
+#include "singCrysConfig.hh"
+#include <boost/program_options.hpp>
+#include <string>
+#include <fstream>
+#include <iostream>
+// Class implementation for the singCrysConfig class. This class reads and
+// stores the contents of a configuration file.
+
+G4String singCrysConfig::filename = "config.txt";
+
+singCrysConfig::singCrysConfig()
+{
+<<<<<<< HEAD
+  // Open the config file, and read in its contents
+  std::ifstream ini_file(filename); // Open stream
+  po::options_description desc;     // Declare option description object
+  desc.add_options()                // Add options
+    ("crys_num_sides", po::value<G4int>()->default_value(4),
+      "Number of sides of the crystal");
+  // Add to map of stored options
+  po::variables_map vm;
+  po::store(parse_config_file(ini_file, desc), vm);
+  po::notify(vm);
+=======
+  std::ifstream ini_file("config.txt");
+  po::options_description desc;
+  desc.add_options()
+    ("crys_num_sides", po::value<int>()->default_value(4),
+      "Number of sides of the crystal");
+  po::variables_map vm;
+  po::store(parse_config_file(ini_file, desc), vm);
+  po::notify(vm);
+
+>>>>>>> d509cb775725979c64dee9bab288ac33d8c67092
+}
+
+// Returns the pointer to the singleton class.
+singCrysConfig* singCrysConfig::GetInstance()
+{
+  static singCrysConfig pInstance;
+  return &pInstance;
+}
+
+<<<<<<< HEAD
+//Returns a pointer to the variables_map storing the config options.
+variables_map* singCrysConfig::GetMap()
+{
+  return &variables_map;
+}
+=======
+// Returns a pointer to the variables_map storing the config options.
+//variables_map* singCrysConfig::GetMap()
+//{
+  //return &variables_map;
+//}
+>>>>>>> d509cb775725979c64dee9bab288ac33d8c67092
