@@ -89,9 +89,9 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
   G4double ScintilPhotonEnergy[nEntriesScint] = 
     {2.138*eV, 2.214*eV, 2.296*eV, 2.385*eV, 2.480*eV, 2.583*eV, 2.696*eV,
      2.818*eV, 2.952*eV, 3.100*eV, 3.263*eV};
-  G4double Scintil[nEntriesScint] = 
-    {0.002, 0.116, 0.118, 0.090, 0.045, 0.018, 0.008, 0.004, 0.003, 0.002,
-     0.002};
+  G4double Scintil[nEntriesScint] =
+    {0.002, 0.002, 0.003, 0.004, 0.008, 0.018, 0.045, 0.090, 0.118, 0.116,
+      0.002};
 
   // Define table and add properties
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
@@ -384,7 +384,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Define the aluminum-world boundary.
   G4OpticalSurface* OpWorldAlSurface = new G4OpticalSurface("WorldAlSurface");
   OpWorldAlSurface->SetModel(unified);
-  OpWorldAlSurface->SetModel(dielectric_metal);
+  OpWorldAlSurface->SetType(dielectric_metal);
   OpWorldAlSurface->SetFinish(ground);
   OpWorldAlSurface->SetSigmaAlpha(0.1);
   G4LogicalBorderSurface* WorldAlSurface = new

@@ -21,10 +21,10 @@ singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
   
   // Choose the particle for the gun
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4String particleName = "opticalphoton";
+  G4String particleName = "gamma";
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName));
-  particleGun->SetParticleEnergy(3.*eV);
+  particleGun->SetParticleEnergy(511.*keV);
 }
 
 // Destructor: delete the particle gun
