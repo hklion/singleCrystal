@@ -8,8 +8,8 @@ singCrysRun::singCrysRun() : nEvent(0)
 {
   // Get collection IDs for the quantities we want.
   G4SDManager* SDM = G4SDManager::GetSDMpointer();
-  //totalNPhotonsID = SDM->GetCollectionID("SiliconAPD/nPhotons");
-  //totalEDepID = SDM->GetCollectionID("SiliconAPD/eDep");
+  totalNPhotonsID = SDM->GetCollectionID("SiliconAPD/nPhotons");
+  totalEDepID = SDM->GetCollectionID("SiliconAPD/eDep");
 }
 
 // Destructor: do nothing
@@ -26,28 +26,28 @@ void singCrysRun::RecordEvent(const G4Event* evt)
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   // Get pointer to hits collection for this event. If NULL, there were no
   // hits and we should skip the rest of this to avoid segfaults.
-  //G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
-  //if (HCE)
-  //{
+  G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
+  if (HCE)
+  {
     // Get events for desired quantities
-    //G4THitsMap<G4double>* eventTotalNPhotons =
-      //(G4THitsMap<G4double>*)(HCE->GetHC(totalNPhotonsID));
-    //G4THitsMap<G4double>* eventTotalEDep =
-      //(G4THitsMap<G4double>*)(HCE->GetHC(totalEDepID));
+    G4THitsMap<G4double>* eventTotalNPhotons =
+      (G4THitsMap<G4double>*)(HCE->GetHC(totalNPhotonsID));
+    G4THitsMap<G4double>* eventTotalEDep =
+      (G4THitsMap<G4double>*)(HCE->GetHC(totalEDepID));
     // Add them to the member hit maps
-    //totalNPhotons += *eventTotalNPhotons;
-    //totalEDep += *eventTotalEDep;
-    //if ((*(eventTotalEDep))[0])
-    //{
-      //EDep = (*((*(eventTotalEDep))[0]));
-    //}
-    //if ((*(eventTotalNPhotons))[0])
-    //{
-      //NPhotons = (*((*(eventTotalNPhotons))[0]));
-    //}
-  //}
-  //analysisManager->FillH1(1, EDep);
-  //analysisManager->FillH1(2, NPhotons);
+    totalNPhotons += *eventTotalNPhotons;
+    totalEDep += *eventTotalEDep;
+    if ((*(eventTotalEDep))[0])
+    {
+      EDep = (*((*(eventTotalEDep))[0]));
+    }
+    if ((*(eventTotalNPhotons))[0])
+    {
+      NPhotons = (*((*(eventTotalNPhotons))[0]));
+    }
+  }
+  analysisManager->FillH1(1, EDep);
+  analysisManager->FillH1(2, NPhotons);
 }
 
 // Prints the amount of energy deposited in the silicon.

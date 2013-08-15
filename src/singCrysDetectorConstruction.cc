@@ -375,8 +375,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4OpticalSurface* OpLayer1AlSurface = new G4OpticalSurface("Layer1AlSurface");
   OpLayer1AlSurface->SetModel(unified);
   OpLayer1AlSurface->SetType(dielectric_metal);
-  OpLayer1AlSurface->SetFinish(ground);
-  OpLayer1AlSurface->SetSigmaAlpha(0.1);
+  OpLayer1AlSurface->SetFinish(polished);
   G4LogicalBorderSurface* Layer1AlSurface = new
     G4LogicalBorderSurface("Layer1AlSurface", physLayer1, physLayer2,
                            OpLayer1AlSurface);
@@ -385,8 +384,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4OpticalSurface* OpWorldAlSurface = new G4OpticalSurface("WorldAlSurface");
   OpWorldAlSurface->SetModel(unified);
   OpWorldAlSurface->SetType(dielectric_metal);
-  OpWorldAlSurface->SetFinish(ground);
-  OpWorldAlSurface->SetSigmaAlpha(0.1);
+  OpWorldAlSurface->SetFinish(polished);
   G4LogicalBorderSurface* WorldAlSurface = new
     G4LogicalBorderSurface("WorldAlSurface", physWorld, physLayer2,
                            OpWorldAlSurface);
@@ -431,11 +429,18 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                       siliconMat,
                                                       "Silicon");
   
-  // Define a sensitive detector and assign it to epoxy.
-  singCrysSiliconSD* siliconSD = new singCrysSiliconSD("singCrys/siliconSD",
-    "SiliconHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(siliconSD);
-  logicEpoxy->SetSensitiveDetector(siliconSD);
+  // Define a multifunctional detector.
+  G4MultiFunctionalDetector* SiliconMFD = new
+    G4MultiFunctionalDetector("SiliconAPD");
+  // Add scorers
+  G4VPrimitiveScorer* primitive;
+  primitive = new G4PSEnergyDeposit("eDep");
+  SiliconMFD->RegisterPrimitive(primitive);
+  primitive = new singCrysPSNPhotons("nPhotons");
+  SiliconMFD->RegisterPrimitive(primitive);
+  // Assign detecor to epoxy logical volume
+  G4SDManager::GetSDMpointer()->AddNewDetector(SiliconMFD);
+  logicEpoxy->SetSensitiveDetector(SiliconMFD);
 
   // Make skin surface on silicon with a certain efficiency.
   G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
@@ -476,8 +481,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Make a surface surounding the casing with a certain relfectivity
   G4OpticalSurface* optCasing = new G4OpticalSurface("optCasing");
   optCasing->SetModel(unified);
-  optCasing->SetFinish(ground);
-  optCasing->SetSigmaAlpha(0.2);
+  optCasing->SetFinish(polished);
   optCasing->SetType(dielectric_metal);
   optCasing->SetMaterialPropertiesTable(generateCeramicTable());
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing", logicCasing, optCasing);

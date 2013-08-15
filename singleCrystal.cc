@@ -38,7 +38,7 @@ int main(int argc, char** argv)
   runManager->SetUserAction(new singCrysPrimaryGeneratorAction());
 
   // Add optional run action class
-//  runManager->SetUserAction(new singCrysRunAction());
+  runManager->SetUserAction(new singCrysRunAction());
 
   // Initialize kernel
   runManager->Initialize();
