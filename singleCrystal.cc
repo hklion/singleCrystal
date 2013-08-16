@@ -14,11 +14,16 @@
 #include "singCrysPhysicsList.hh"
 #include "singCrysPrimaryGeneratorAction.hh"
 #include "singCrysRunAction.hh"
+#include "singCrysConfig.hh"
 
 #include "G4StepLimiterBuilder.hh"
 #include "G4VModularPhysicsList.hh"
 
 #include "Randomize.hh"
+
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
@@ -54,14 +59,31 @@ int main(int argc, char** argv)
   singCrysUIsession* loggedSession = new singCrysUIsession;
   UImanager->SetCoutDestination(loggedSession);
 
-  // If more than one argument, batch mode
-  if (argc != 1)
+  po::options_description desc;
+  desc.add_options()
+    ("config,c", po::value<std::string>()->default_value("config.ini"),
+      "configuration fle")
+    ("script", po::value<std::string>()->default_value(""),
+      "script to run in batch mode");
+  po::positional_options_description pos_options;
+  pos_options.add("script", 1);
+  po::variables_map vm;
+  //po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::command_line_parser(argc, argv).options(desc).
+    positional(pos_options).run(), vm);
+  po::notify(vm);
+ 
+  singCrysConfig::GetInstance()->filename = (G4String) vm["config"].as<std::string>();
+ 
+  // If 'script' is not the empty string, batch mode
+  if (std::strcmp((G4String)vm["script"].as<std::string>(), "") != 0)
   {
     G4String command = "/control/execute ";
 
-    G4String fileName = argv[1];
+    G4String fileName = (G4String) vm["script"].as<std::string>();
     UImanager->ApplyCommand(command + fileName);
   }
+
   // Otherwise, interactive mode
   else
   {

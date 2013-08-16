@@ -6,7 +6,7 @@
 // Class implementation for the singCrysConfig class. This class reads and
 // stores the contents of a configuration file.
 
-G4String singCrysConfig::filename = "config.txt";
+G4String singCrysConfig::filename = "";
 
 singCrysConfig::singCrysConfig()
 {
