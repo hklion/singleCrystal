@@ -14,10 +14,9 @@ singCrysConfig::singCrysConfig()
   std::ifstream ini_file(filename); // Open stream
   po::options_description desc;     // Declare option description object
   desc.add_options()                // Add options
-    ("crys_num_sides", po::value<G4int>()->default_value(4),
+    ("crysNumSides", po::value<G4int>()->default_value(4),
       "Number of sides of the crystal");
   // Add to map of stored options
-  po::variables_map vm;
   po::store(parse_config_file(ini_file, desc), vm);
   po::notify(vm);
 }
@@ -30,7 +29,7 @@ singCrysConfig* singCrysConfig::GetInstance()
 }
 
 //Returns a pointer to the variables_map storing the config options.
-variables_map* singCrysConfig::GetMap()
+po::variables_map* singCrysConfig::GetMap()
 {
-  return &variables_map;
+  return &vm;
 }

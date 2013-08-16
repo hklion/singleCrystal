@@ -19,6 +19,8 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 #include "G4SubtractionSolid.hh"
+#include "singCrysConfig.hh"
+#include <boost/program_options.hpp>
 
 // Constructor: define materials
 singCrysDetectorConstruction::singCrysDetectorConstruction()
@@ -215,12 +217,14 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 {
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
+  // Also get config file parameters
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
 
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
   G4double crysSideLength = 3.0*cm;  // Length along flats
   G4double crysSizeZ = 11*cm;       // Z axis length
-  G4int crysNumSides = 4;           // Number of sides
+  G4int crysNumSides = config["crysNumSides"].as<G4int>(); // Number of sides
   G4double layer1Thick = 100*um;    // Thickness of layer surrounding crystal
   G4double layer2Thick = 100.*um;     // Thickness of layer surrounding layer1
   G4double AlCoating1Z = 0.1*mm;    // Thickness of top Al APD case coating

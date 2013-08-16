@@ -17,7 +17,7 @@ class singCrysConfig {
     singCrysConfig();
     singCrysConfig(const singCrysConfig&);
     singCrysConfig& operator=(const singCrysConfig&);
-    po::variables_map* vm;
+    po::variables_map vm;
 };
 
 #endif
