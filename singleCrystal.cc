@@ -45,6 +45,21 @@ int main(int argc, char** argv)
   // Add optional run action class
 //  runManager->SetUserAction(new singCrysRunAction());
 
+  po::options_description desc;
+  desc.add_options()
+    ("config,c", po::value<std::string>()->default_value("config.ini"),
+      "configuration fle")
+    ("script", po::value<std::string>()->default_value(""),
+      "script to run in batch mode");
+  po::positional_options_description pos_options;
+  pos_options.add("script", 1);
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(desc).
+    positional(pos_options).run(), vm);
+  po::notify(vm);
+  singCrysConfig::LoadFile((G4String) vm["config"].as<std::string>());
+
+
   // Initialize kernel
   runManager->Initialize();
 
@@ -58,22 +73,6 @@ int main(int argc, char** argv)
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
   singCrysUIsession* loggedSession = new singCrysUIsession;
   UImanager->SetCoutDestination(loggedSession);
-
-  po::options_description desc;
-  desc.add_options()
-    ("config,c", po::value<std::string>()->default_value("config.ini"),
-      "configuration fle")
-    ("script", po::value<std::string>()->default_value(""),
-      "script to run in batch mode");
-  po::positional_options_description pos_options;
-  pos_options.add("script", 1);
-  po::variables_map vm;
-  //po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::store(po::command_line_parser(argc, argv).options(desc).
-    positional(pos_options).run(), vm);
-  po::notify(vm);
- 
-  singCrysConfig::GetInstance()->filename = (G4String) vm["config"].as<std::string>();
  
   // If 'script' is not the empty string, batch mode
   if (std::strcmp((G4String)vm["script"].as<std::string>(), "") != 0)

@@ -10,7 +10,7 @@ class singCrysConfig {
 
   public:
     static singCrysConfig* GetInstance();
-    static G4String filename;
+    static singCrysConfig* LoadFile(const G4String);
     po::variables_map* GetMap();
 
   protected:
@@ -18,6 +18,8 @@ class singCrysConfig {
     singCrysConfig(const singCrysConfig&);
     singCrysConfig& operator=(const singCrysConfig&);
     po::variables_map vm;
+    static G4String filename;
+    static G4bool constructed;
 };
 
 #endif
