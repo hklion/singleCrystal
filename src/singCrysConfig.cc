@@ -59,6 +59,9 @@ singCrysConfig::singCrysConfig()
       "Material of layer 2")
     ("worldMat", po::value<std::string>()->default_value("G4_Galactic"),
       "Material of the world")
+    ("coating1Mat", po::value<std::string>()->default_value("G4_Galactic"),
+      "Material of the top Al APD case coating")
+    ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
     ;

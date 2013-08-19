@@ -73,17 +73,17 @@ void singCrysDetectorConstruction::DefineMaterials()
 G4MaterialPropertiesTable* singCrysDetectorConstruction::
   generateTable(G4String material)
 {
-  if (material.compare("G4_Galactic") == 0 || material.compare("G4_Air") == 0)
+  if (material.compareTo("G4_Galactic") == 0 || material.compareTo("G4_AIR") == 0)
     return generateRIndexTable(1.00);
-  else if (material.compare("G4_Al") == 0)
+  else if (material.compareTo("G4_Al") == 0)
     return generateAlTable();
-  else if (material.compare("LYSO") == 0)
+  else if (material.compareTo("LYSO") == 0)
     return generateLYSOTable();
-  else if (material.compare("G4_Si") == 0)
+  else if (material.compareTo("G4_Si") == 0)
     return generateSiTable();
-  else if (material.compare("Epoxy") == 0)
+  else if (material.compareTo("Epoxy") == 0)
     return generateRIndexTable(1.50);
-  else if (material.compare("G4_ALUMINUM_OXIDE") == 0)
+  else if (material.compareTo("G4_ALUMINUM_OXIDE") == 0)
     return generateCeramicTable();
   else
   {
@@ -91,6 +91,31 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
       << ". Air table used.";
     return generateRIndexTable(1.00);
   }
+}
+
+// Determines whether to use a dielectric-dielectric or dielectric-metal
+// boundary for a surface boundary
+G4SurfaceType singCrysDetectorConstruction::surfaceType(G4String material)
+{
+  if (material.compareTo("G4_Si") == 0 || material.compareTo("G4_Al") == 0
+    || material.compareTo("G4_ALUMINUM_OXIDE") == 0)
+    return dielectric_metal;
+  else
+    return dielectric_dielectric;
+}
+
+// Determines whether to use a dielectric-dielectric or dielectric-metal
+// boundary for a 
+G4SurfaceType singCrysDetectorConstruction::
+  surfaceType(G4String material1, G4String material2)
+{
+  if (material1.compareTo("G4_Si") == 0 || material1.compareTo("G4_Al") == 0
+      || material1.compareTo("G4_ALUMINUM_OXIDE") == 0
+      || material2.compareTo("G4_Si") == 0 || material2.compareTo("G4_Al") == 0
+      || material2.compareTo("G4_ALUMINUM_OXIDE") == 0)
+    return dielectric_metal;
+  else
+    return dielectric_dielectric;
 }
 
 // Constructs and returns material properties table for LYSO
@@ -418,7 +443,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Now define the aluminum-layer1 boundary.
   G4OpticalSurface* OpLayer1AlSurface = new G4OpticalSurface("Layer1AlSurface");
   OpLayer1AlSurface->SetModel(unified);
-  OpLayer1AlSurface->SetType(dielectric_metal);
+  OpLayer1AlSurface->SetType(surfaceType(layer1MatStr, layer2MatStr));
   OpLayer1AlSurface->SetFinish(ground);
   OpLayer1AlSurface->SetSigmaAlpha(0.1);
   G4LogicalBorderSurface* Layer1AlSurface = new
@@ -428,7 +453,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Define the aluminum-world boundary.
   G4OpticalSurface* OpWorldAlSurface = new G4OpticalSurface("WorldAlSurface");
   OpWorldAlSurface->SetModel(unified);
-  OpWorldAlSurface->SetType(dielectric_metal);
+  OpWorldAlSurface->SetType(surfaceType(worldMatStr, layer2MatStr));
   OpWorldAlSurface->SetFinish(ground);
   OpWorldAlSurface->SetSigmaAlpha(0.1);
   G4LogicalBorderSurface* WorldAlSurface = new
@@ -453,13 +478,15 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Define materials for APD
   G4Material* APDMat = nist->FindOrBuildMaterial("G4_AIR");
-  APDMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
-  G4Material* casingMat = nist->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
-  casingMat->SetMaterialPropertiesTable(generateCeramicTable());
-  G4Material* epoxyMat = nist->FindOrBuildMaterial("Epoxy");
-  epoxyMat->SetMaterialPropertiesTable(generateRIndexTable(1.5));
-  G4Material* siliconMat = nist->FindOrBuildMaterial("G4_Si");
-  siliconMat->SetMaterialPropertiesTable(generateSiTable());
+  G4String casingMatStr = "G4_ALUMINUM_OXIDE";
+  G4Material* casingMat = nist->FindOrBuildMaterial(casingMatStr);
+  casingMat->SetMaterialPropertiesTable(generateTable(casingMatStr));
+  G4String epoxyMatStr = "Epoxy";
+  G4Material* epoxyMat = nist->FindOrBuildMaterial(epoxyMatStr);
+  epoxyMat->SetMaterialPropertiesTable(generateTable(epoxyMatStr));
+  G4String siliconMatStr = "G4_Si";
+  G4Material* siliconMat = nist->FindOrBuildMaterial(siliconMatStr);
+  siliconMat->SetMaterialPropertiesTable(generateTable(siliconMatStr));
 
 // Define logical volumes
   G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
@@ -485,7 +512,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
   optSilicon->SetModel(glisur);
   optSilicon->SetFinish(polished);
-  optSilicon->SetType(dielectric_metal);
+  optSilicon->SetType(surfaceType(siliconMatStr));
   optSilicon->SetMaterialPropertiesTable(generateSiSurfaceTable());
   G4LogicalSurface* skinSilicon = new G4LogicalSkinSurface("skinSilicon",
     logicSilicon, optSilicon);
@@ -522,9 +549,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   optCasing->SetModel(unified);
   optCasing->SetFinish(ground);
   optCasing->SetSigmaAlpha(0.2);
-  optCasing->SetType(dielectric_metal);
-  optCasing->SetMaterialPropertiesTable(generateCeramicTable());
-  G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing", logicCasing, optCasing);
+  optCasing->SetType(surfaceType(casingMatStr));
+  optCasing->SetMaterialPropertiesTable(generateTable(casingMatStr));
+  G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing",
+    logicCasing, optCasing);
 
   // Make aluminum casing for APD. It is made by making a G4Polyhedra with
   // the same number of sides as the crystal. Then the translated cyrstal
@@ -552,8 +580,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                       solidAlAPDCaseMid, solidAPD, 0,
                                       G4ThreeVector(0.0, 0.0, -casingPlaceZ));
   // Generate aluminum material
-  G4Material* APDAlCaseMat = nist->FindOrBuildMaterial("G4_Al");
-  APDAlCaseMat->SetMaterialPropertiesTable(generateAlTable());
+  G4String APDAlCaseMatStr = "G4_Al";
+  G4Material* APDAlCaseMat = nist->FindOrBuildMaterial(APDAlCaseMatStr);
+  APDAlCaseMat->SetMaterialPropertiesTable(generateTable(APDAlCaseMatStr));
   G4LogicalVolume* logicAlAPDCase = new G4LogicalVolume(solidAlAPDCase,
                                                        APDAlCaseMat,
                                                        "AlAPDCase");
@@ -578,9 +607,12 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                   AlCoating2ZPlaneCoords,
                                                   crysRInner,
                                                   layer2ROuter);
-  G4Material* coating1Mat = worldMat;
-  G4Material* coating2Mat = nist->FindOrBuildMaterial("Epoxy");
-  coating2Mat->SetMaterialPropertiesTable(generateRIndexTable(1.5));
+  G4String coating1MatStr = (G4String) config["coating1Mat"].as<std::string>();
+  G4String coating2MatStr = (G4String) config["coating2Mat"].as<std::string>();
+  G4Material* coating1Mat = nist->FindOrBuildMaterial(coating1MatStr);
+  G4Material* coating2Mat = nist->FindOrBuildMaterial(coating2MatStr);
+  coating1Mat->SetMaterialPropertiesTable(generateTable(coating1MatStr));
+  coating2Mat->SetMaterialPropertiesTable(generateTable(coating2MatStr));
   G4LogicalVolume* logicAlCoating1 = new G4LogicalVolume(solidAlCoating1,
                                                          coating1Mat,
                                                          "AlCoating1");
@@ -631,7 +663,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4OpticalSurface* OpCoat2APDCaseSurface = 
     new G4OpticalSurface("Coating2APDCaseSurface");
   OpCoat2APDCaseSurface->SetModel(glisur);
-  OpCoat2APDCaseSurface->SetType(dielectric_metal);
+  OpCoat2APDCaseSurface->SetType(surfaceType(APDAlCaseMatStr,
+    coating2MatStr));
   OpCoat2APDCaseSurface->SetFinish(polished);
   G4LogicalBorderSurface* Coat2APDCaseSurface = new
   G4LogicalBorderSurface("Coating2APDCaseSurface", physAlCoating2,

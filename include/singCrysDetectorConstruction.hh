@@ -10,6 +10,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 #include "G4Material.hh"
+#include "G4OpticalSurface.hh"
 
 class G4VPhysicalVolume;
 class G4UserLimits;
@@ -26,13 +27,16 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
   private:
     //Materials and optical properties generators
     void DefineMaterials();
-    G4MaterialPropertiesTable* generateTable(G4String material);
+    G4MaterialPropertiesTable* generateTable(G4String);
     G4MaterialPropertiesTable* generateLYSOTable();
-    G4MaterialPropertiesTable* generateRIndexTable(G4double rindex);
+    G4MaterialPropertiesTable* generateRIndexTable(G4double);
     G4MaterialPropertiesTable* generateSiSurfaceTable();
     G4MaterialPropertiesTable* generateCeramicTable();
     G4MaterialPropertiesTable* generateSiTable();
     G4MaterialPropertiesTable* generateAlTable();
+    G4SurfaceType surfaceType(G4String);
+    G4SurfaceType surfaceType(G4String, G4String);
+    
     // Energy/length limits
     G4UserLimits* fLimit;
 };
