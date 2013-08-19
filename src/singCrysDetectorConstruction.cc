@@ -20,6 +20,7 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4SubtractionSolid.hh"
 #include "singCrysConfig.hh"
+#include "singCrysReadFile.hh"
 #include <boost/program_options.hpp>
 
 // Constructor: define materials
@@ -121,14 +122,13 @@ G4SurfaceType singCrysDetectorConstruction::
 // Constructs and returns material properties table for LYSO
 G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
 {
-  const G4int nEntries = 7;
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  G4String infileName = (G4String) config["LYSORIndexFile"].as<std::string>();
+  singCrysReadFile RIndex = singCrysReadFile(infileName);
 
-  // Define energies and corresponding quantities
+  const G4int nEntries = 7;
   G4double PhotonEnergy[nEntries] =
       {2.271*eV, 2.403*eV, 2.551*eV, 2.690*eV, 2.844*eV, 2.952*eV, 3.062*eV};
-
-  G4double RefractiveIndex[nEntries] =
-      {1.806, 1.810, 1.813, 1.818, 1.822, 1.827, 1.833};
 
   G4double Absorption[nEntries] = 
       {40*cm, 40*cm, 40*cm, 40*cm, 40*cm, 40*cm, 40*cm};
@@ -147,8 +147,8 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
   // Define table and add properties
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
 
-  table->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries)
-      ->SetSpline(true);
+  table->AddProperty("RINDEX", RIndex.GetEnergies(), RIndex.GetVals(),
+    RIndex.GetNEntries())->SetSpline(true);
   table->AddProperty("ABSLENGTH", PhotonEnergy, Absorption, nEntries)
       ->SetSpline(true);
   table->AddProperty("RAYLEIGH", PhotonEnergy, Rayleigh, nEntries)

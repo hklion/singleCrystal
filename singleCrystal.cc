@@ -44,7 +44,6 @@ int main(int argc, char** argv)
 
   // Add optional run action class
 //  runManager->SetUserAction(new singCrysRunAction());
-  G4cout << "up until things" << endl;
   po::options_description desc;
   desc.add_options()
     ("config,c", po::value<std::string>()->default_value("config.ini"),
@@ -58,7 +57,6 @@ int main(int argc, char** argv)
     positional(pos_options).run(), vm);
   po::notify(vm);
   singCrysConfig::LoadFile((G4String) vm["config"].as<std::string>());
-  G4cout << "read things in" << endl;
 
   // Initialize kernel
   runManager->Initialize();

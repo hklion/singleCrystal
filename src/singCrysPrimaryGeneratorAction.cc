@@ -24,7 +24,7 @@ singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
   G4String particleName = "gamma";
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName));
-  particleGun->SetParticleEnergy(511.*keV);
+  particleGun->SetParticleEnergy(10.*keV);
 }
 
 // Destructor: delete the particle gun

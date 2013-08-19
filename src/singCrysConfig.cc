@@ -64,6 +64,8 @@ singCrysConfig::singCrysConfig()
     ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
+    ("LYSORIndexFile", po::value<std::string>()
+      ->default_value("LYSO_RIndex.dat"), "File name for LYSO refractive index")
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);
