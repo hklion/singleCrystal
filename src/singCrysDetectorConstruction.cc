@@ -69,6 +69,30 @@ void singCrysDetectorConstruction::DefineMaterials()
   opticalGrease->AddElement(O, 1); 
 }
 
+// Returns the appropriate material properties table for a given material
+G4MaterialPropertiesTable* singCrysDetectorConstruction::
+  generateTable(G4String material)
+{
+  if (material.compare("G4_Galactic") == 0 || material.compare("G4_Air") == 0)
+    return generateRIndexTable(1.00);
+  else if (material.compare("G4_Al") == 0)
+    return generateAlTable();
+  else if (material.compare("LYSO") == 0)
+    return generateLYSOTable();
+  else if (material.compare("G4_Si") == 0)
+    return generateSiTable();
+  else if (material.compare("Epoxy") == 0)
+    return generateRIndexTable(1.50);
+  else if (material.compare("G4_ALUMINUM_OXIDE") == 0)
+    return generateCeramicTable();
+  else
+  {
+    G4cerr << "Unable to find material " << material
+      << ". Air table used.";
+    return generateRIndexTable(1.00);
+  }
+}
+
 // Constructs and returns material properties table for LYSO
 G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
 {
@@ -259,20 +283,24 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double crysMaxXYRad = crysSideLength / (2 * std::sin(pi / crysNumSides));
   
   // Define materials for crystals and layering
-  G4Material* crysMat = nist->FindOrBuildMaterial("LYSO");
-  crysMat->SetMaterialPropertiesTable(generateLYSOTable());
-  G4Material* layer1Mat = nist->FindOrBuildMaterial("G4_Galactic");
-  layer1Mat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
-  G4Material* layer2Mat = nist->FindOrBuildMaterial("G4_Al");
-  layer2Mat->SetMaterialPropertiesTable(generateAlTable());
+  G4String crysMatStr = (G4String) config["crysMat"].as<std::string>();
+  G4Material* crysMat = nist->FindOrBuildMaterial(crysMatStr);
+  crysMat->SetMaterialPropertiesTable(generateTable(crysMatStr));
+  G4String layer1MatStr = (G4String) config["layer1Mat"].as<std::string>();
+  G4Material* layer1Mat = nist->FindOrBuildMaterial(layer1MatStr);
+  layer1Mat->SetMaterialPropertiesTable(generateTable(layer1MatStr));
+  G4String layer2MatStr = (G4String) config["layer2Mat"].as<std::string>();
+  G4Material* layer2Mat = nist->FindOrBuildMaterial(layer2MatStr);
+  layer2Mat->SetMaterialPropertiesTable(generateTable(layer2MatStr));
   // Check overlaps in volumes
-  G4bool checkOverlaps = true;
+  G4bool checkOverlaps = config["checkOverlaps"].as<G4bool>();
 
   // World parameters
   G4double worldSizeXY = 5 * crysMaxXYRad; // Maximum width is twice radius
   G4double worldSizeZ = 5 * crysSizeZ;
-  G4Material* worldMat = nist->FindOrBuildMaterial("G4_Galactic");
-  worldMat->SetMaterialPropertiesTable(generateRIndexTable(1.00));
+  G4String worldMatStr = (G4String) config["worldMat"].as<std::string>();
+  G4Material* worldMat = nist->FindOrBuildMaterial(worldMatStr);
+  worldMat->SetMaterialPropertiesTable(generateTable(worldMatStr));
 
   // Define world
   G4Box* solidWorld = new G4Box("World",

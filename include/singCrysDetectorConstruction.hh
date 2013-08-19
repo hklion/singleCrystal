@@ -26,6 +26,7 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
   private:
     //Materials and optical properties generators
     void DefineMaterials();
+    G4MaterialPropertiesTable* generateTable(G4String material);
     G4MaterialPropertiesTable* generateLYSOTable();
     G4MaterialPropertiesTable* generateRIndexTable(G4double rindex);
     G4MaterialPropertiesTable* generateSiSurfaceTable();

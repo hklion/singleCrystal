@@ -59,7 +59,8 @@ singCrysConfig::singCrysConfig()
       "Material of layer 2")
     ("worldMat", po::value<std::string>()->default_value("G4_Galactic"),
       "Material of the world")
-    ("checkOverlaps", po::value<G4bool>(), "Check overlaps in geometry?")
+    ("checkOverlaps", po::value<G4bool>()->default_value(true),
+      "Check overlaps in geometry?")
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);
