@@ -15,29 +15,41 @@ singCrysConfig::singCrysConfig()
   std::ifstream ini_file(filename); // Open stream
   po::options_description desc;     // Declare option description object
   desc.add_options()                // Add options
-    ("crysNumSides", po::value<G4int>(), "Number of sides of the crystal")
-    ("crysSideLength", po::value<G4double>(), "Length of flats")
-    ("crysSideZ", po::value<G4double>(), "Z axis crystal length")
-    ("layer1Thick", po::value<G4double>(),
+    ("crysNumSides", po::value<G4int>()->default_value(4),
+      "Number of sides of the crystal")
+    ("crysSideLength", po::value<G4double>()->default_value(30.),
+      "Length of flats")
+    ("crysSizeZ", po::value<G4double>()->default_value(110.),
+      "Z axis crystal length")
+    ("layer1Thick", po::value<G4double>()->default_value(0.1),
       "Thickness of layer surrounding crystal")
-    ("layer2Thick", po::value<G4double>(),
+    ("layer2Thick", po::value<G4double>()->default_value(0.1),
       "Thickness of layer surrounding layer1")
-    ("AlCoating1Z", po::value<G4double>(),
+    ("AlCoating1Z", po::value<G4double>()->default_value(0.1),
       "Thickness of top Al APD case coating")
-    ("AlCoating2Z", po::value<G4double>(),
+    ("AlCoating2Z", po::value<G4double>()->default_value(0.5),
       "Thickness of bottom Al APD case coating")
-    ("siliconXY", po::value<G4double>(), "XY dimension of silicon APD chip")
-    ("siliconZ", po::value<G4double>(), "Thickness of silicon APD chip")
-    ("casingX", po::value<G4double>(), "X dimension of APD ceramic casing")
-    ("casingY", po::value<G4double>(), "Y dimension of APD ceramic casing")
-    ("casingZ", po::value<G4double>(), "Thickness of APD ceramic casing")
-    ("epoxyX", po::value<G4double>(), "X dimension of epoxy on APD")
-    ("epoxyY", po::value<G4double>(), "Y dimension of epoxy on APD")
-    ("epoxyZ", po::value<G4double>(), "Thickness of epoxy on APD")
-    ("APDAlCaseThick", po::value<G4double>(),
+    ("siliconXY", po::value<G4double>()->default_value(10.),
+      "XY dimension of silicon APD chip")
+    ("siliconZ", po::value<G4double>()->default_value(0.6),
+      "Thickness of silicon APD chip")
+    ("casingX", po::value<G4double>()->default_value(13.7),
+      "X dimension of APD ceramic casing")
+    ("casingY", po::value<G4double>()->default_value(14.5),
+      "Y dimension of APD ceramic casing")
+    ("casingZ", po::value<G4double>()->default_value(1.78),
+      "Thickness of APD ceramic casing")
+    ("epoxyX", po::value<G4double>()->default_value(11.7),
+      "X dimension of epoxy on APD")
+    ("epoxyY", po::value<G4double>()->default_value(12.5),
+      "Y dimension of epoxy on APD")
+    ("epoxyZ", po::value<G4double>()->default_value(0.6),
+      "Thickness of epoxy on APD")
+    ("APDAlCaseThick", po::value<G4double>()->default_value(5.),
       "Thickness of rim on Al APD case")
-    ("APDAlCaseZ", po::value<G4double>(), "Thickness of Al APD case")
-    ("APDSlotDepth", po::value<G4double>(),
+    ("APDAlCaseZ", po::value<G4double>()->default_value(10.),
+      "Thickness of Al APD case")
+    ("APDSlotDepth", po::value<G4double>()->default_value(5.),
       "How much of the crystal is in the Al case")
     ("crysMat", po::value<std::string>()->default_value("LYSO"),
       "Crystal material")

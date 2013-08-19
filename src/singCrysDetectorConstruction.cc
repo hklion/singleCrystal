@@ -222,25 +222,37 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
 
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
-  G4double crysSideLength = 3.0*cm;  // Length along flats
-  G4double crysSizeZ = 11*cm;       // Z axis length
+  // Length along flats
+  G4double crysSideLength = config["crysSideLength"].as<G4double>();
+  G4double crysSizeZ = config["crysSizeZ"].as<G4double>();  // Z axis length
   G4int crysNumSides = config["crysNumSides"].as<G4int>(); // Number of sides
-  G4double layer1Thick = 100*um;    // Thickness of layer surrounding crystal
-  G4double layer2Thick = 100.*um;     // Thickness of layer surrounding layer1
-  G4double AlCoating1Z = 0.1*mm;    // Thickness of top Al APD case coating
-  G4double AlCoating2Z = 0.5*mm;    // Thickenss of bottom Al APD case coating
+  // Thickness of layer surrounding crystal
+  G4double layer1Thick = config["layer1Thick"].as<G4double>();
+  // Thickness of layer surrounding layer1
+  G4double layer2Thick = config["layer2Thick"].as<G4double>();
+  // Thickness of top Al APD case coating
+  G4double AlCoating1Z = config["AlCoating1Z"].as<G4double>();
+  // Thickness of botom Al APD case coating
+  G4double AlCoating2Z = config["AlCoating2Z"].as<G4double>();
   // Parameters for APD
-  G4double siliconXY = 10*mm;       // XY dimension of silicon APD chip
-  G4double siliconZ = 0.6*mm;       // Thickness of silicon APD chip
-  G4double casingX = 13.7*mm;       // X dimension of APD ceramic casing
-  G4double casingY = 14.5*mm;       // Y dimension of APD ceramic casing
-  G4double casingZ = 1.78*mm;       // Thickness of APD ceramic casing
-  G4double epoxyX = 11.7*mm;        // X dimension of epoxy on APD
-  G4double epoxyY = 12.5*mm;        // Y dimension of epoxy on APD
-  G4double epoxyZ = 0.6*mm;         // Thickness of epoxy on APD
-  G4double APDAlCaseThick = 5.*mm;  // Thickness of rim on Al APD case
-  G4double APDAlCaseZ = 10.*mm;     // Thickness of Al APD case
-  G4double APDSlotDepth = 5.*mm;    // How much the crystal is in the Al case
+  // XY dimension of silicon APD chip
+  G4double siliconXY = config["siliconXY"].as<G4double>();
+  // Thickness of silicon APD chip
+  G4double siliconZ = config["siliconZ"].as<G4double>();
+  // Dimensions of APD ceramic casing
+  G4double casingX = config["casingX"].as<G4double>();
+  G4double casingY = config["casingY"].as<G4double>();
+  G4double casingZ = config["casingZ"].as<G4double>();
+  // Dimensions of epoxy on APD
+  G4double epoxyX = config["epoxyX"].as<G4double>();
+  G4double epoxyY = config["epoxyY"].as<G4double>();
+  G4double epoxyZ = config["epoxyZ"].as<G4double>();
+  // thickness of rim on Al APD case
+  G4double APDAlCaseThick = config["APDAlCaseThick"].as<G4double>();
+  // Thickness of Al APD case
+  G4double APDAlCaseZ = config["APDAlCaseZ"].as<G4double>();
+  // How much fo the crystal is in the Al case
+  G4double APDSlotDepth = config["APDSlotDepth"].as<G4double>();
   // Length from the center of the polygonal face to the middle of one of
   // the polygon's sides.
   G4double crysRadLen = crysSideLength / (2 * std::tan(pi / crysNumSides));
