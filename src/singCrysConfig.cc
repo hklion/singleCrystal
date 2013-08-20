@@ -64,12 +64,16 @@ singCrysConfig::singCrysConfig()
     ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
-    ("ScintYield", po::value<G4double>()->default_value(26.),
+    ("scintYield", po::value<G4double>()->default_value(26.),
       "Scintillation yield (/MeV)")
-    ("ResScale", po::value<G4double>()->default_value(1.0),
+    ("resScale", po::value<G4double>()->default_value(1.0),
       "Resolution scale")
-    ("TimeConst", po::value<G4double>()->default_value(40.),
-      "Time constant for scintillation (ns)")
+    ("fastTimeConst", po::value<G4double>()->default_value(40.),
+      "Time constant for fast component of scintillation (ns)")
+    ("slowTimeConst", po::value<G4double>()->default_value(0.),
+      "Time constant for slow component of scintillation (ns)")
+    ("yieldRatio", po::value<G4double>()->default_value(1.),
+      "Relative strength of fast component as fraction of total scint yeild")
     ("dataPath", po::value<std::string>()->default_value(""),
       "Path to data files")
     ("crysRIndexFile", po::value<std::string>()
@@ -78,8 +82,12 @@ singCrysConfig::singCrysConfig()
       "File name for crys absorption length (values in mm)")
     ("crysRayFile", po::value<std::string>()->default_value("LYSO_Ray.dat"),
       "File name for crys Rayleigh scattering length (values in mm)")
-    ("crysScintFile", po::value<std::string>()->default_value("LYSO_Scint.dat"),
-      "File name for crys scintillation intensity")
+    ("crysFastScintFile",
+      po::value<std::string>()->default_value("LYSO_FastScint.dat"),
+      "File name for crys fast component scintillation intensity")
+   ("crysSlowScintFile",
+      po::value<std::string>()->default_value(""),
+      "File name for crys slow component scintillation intensity")
     ("SiQEffFile", po::value<std::string>()->default_value("Si_QEff.dat"),
       "File name for silicon quantum efficiency")
     ("SiReflFile", po::value<std::string>()->default_value("Si_Refl.dat"),

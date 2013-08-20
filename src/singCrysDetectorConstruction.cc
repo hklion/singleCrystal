@@ -118,6 +118,7 @@ G4SurfaceType singCrysDetectorConstruction::
 // Constructs and returns material properties table for the crystal
 G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
 {
+  G4bool twoComponent = true; // Whether there are two scintillation components
   // Get config options map
   po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
   // Get relevant config options
@@ -125,12 +126,20 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
   G4String fileRIndex = (G4String) config["crysRIndexFile"].as<std::string>();
   G4String fileAbs = (G4String) config["crysAbsFile"].as<std::string>();
   G4String fileRay = (G4String) config["crysRayFile"].as<std::string>();
-  G4String fileScint = (G4String) config["crysScintFile"].as<std::string>();
+  G4String fileFastScint =
+    (G4String) config["crysFastScintFile"].as<std::string>();
+  G4String fileSlowScint =
+    (G4String) config["crysSlowScintFile"].as<std::string>();
+  // Check whether there is a second scintillation component file. If there
+  // isn't, assume that there is only one component.
+  G4cout << fileSlowScint.compareTo("") << " " << fileSlowScint << G4endl;
+  if (fileSlowScint.compareTo("") == 0)
+    twoComponent = false;
   // Read in files
   singCrysReadFile RIndex = singCrysReadFile(dataPath + fileRIndex);
   singCrysReadFile Abs = singCrysReadFile(dataPath + fileAbs);
   singCrysReadFile Ray = singCrysReadFile(dataPath + fileRay);
-  singCrysReadFile Scint = singCrysReadFile(dataPath + fileScint);
+  singCrysReadFile FastScint = singCrysReadFile(dataPath + fileFastScint);
   
   // Define table and add properties
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
@@ -140,16 +149,28 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
     Abs.GetNEntries())->SetSpline(true);
   table->AddProperty("RAYLEIGH", Ray.GetEnergies(), Ray.GetVals(),
     Ray.GetNEntries())->SetSpline(true);
-  table->AddProperty("FASTCOMPONENT", Scint.GetEnergies(), Scint.GetVals(),
-    Scint.GetNEntries())->SetSpline(true);
+  table->AddProperty("FASTCOMPONENT", FastScint.GetEnergies(),
+    FastScint.GetVals(), FastScint.GetNEntries())->SetSpline(true);
 
-  G4double scintYield = config["ScintYield"].as<G4double>();
-  G4double resScale = config["ResScale"].as<G4double>();
-  G4double timeConst = config["TimeConst"].as<G4double>();
+  G4double scintYield = config["scintYield"].as<G4double>();
+  G4double resScale = config["resScale"].as<G4double>();
+  G4double fastTimeConst = config["fastTimeConst"].as<G4double>();
   table->AddConstProperty("SCINTILLATIONYIELD", scintYield / keV);
   table->AddConstProperty("RESOLUTIONSCALE", resScale); //TODO: FIX
-  table->AddConstProperty("FASTTIMECONSTANT", timeConst * ns);
+  table->AddConstProperty("FASTTIMECONSTANT", fastTimeConst * ns);
 
+  // If there is a second scintillation component, add it
+  if (twoComponent)
+  {
+    singCrysReadFile SlowScint = singCrysReadFile(dataPath + fileSlowScint);
+    table->AddProperty("SLOWCOMPONENT", SlowScint.GetEnergies(),
+      SlowScint.GetVals(), SlowScint.GetNEntries())->SetSpline(true);
+    G4double slowTimeConst = config["slowTimeConst"].as<G4double>();
+    G4double yieldRatio = config["yieldRatio"].as<G4double>();
+    table->AddConstProperty("SLOWTIMECONSTANT", slowTimeConst * ns);
+    table->AddConstProperty("YIELDRATIO", yieldRatio);
+    G4cout << slowTimeConst << G4endl;
+  }
   return table;
 }
 
