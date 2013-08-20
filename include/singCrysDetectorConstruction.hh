@@ -28,11 +28,10 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
     //Materials and optical properties generators
     void DefineMaterials();
     G4MaterialPropertiesTable* generateTable(G4String);
-    G4MaterialPropertiesTable* generateLYSOTable();
+    G4MaterialPropertiesTable* generateCrysTable();
     G4MaterialPropertiesTable* generateRIndexTable(G4double);
     G4MaterialPropertiesTable* generateSiSurfaceTable();
     G4MaterialPropertiesTable* generateCeramicTable();
-    G4MaterialPropertiesTable* generateSiTable();
     G4MaterialPropertiesTable* generateAlTable();
     G4SurfaceType surfaceType(G4String);
     G4SurfaceType surfaceType(G4String, G4String);

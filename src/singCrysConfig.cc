@@ -18,39 +18,39 @@ singCrysConfig::singCrysConfig()
     ("crysNumSides", po::value<G4int>()->default_value(4),
       "Number of sides of the crystal")
     ("crysSideLength", po::value<G4double>()->default_value(30.),
-      "Length of flats")
+      "Length of flats (mm)")
     ("crysSizeZ", po::value<G4double>()->default_value(110.),
-      "Z axis crystal length")
+      "Z axis crystal length (mm)")
     ("layer1Thick", po::value<G4double>()->default_value(0.1),
-      "Thickness of layer surrounding crystal")
+      "Thickness of layer surrounding crystal(mm)")
     ("layer2Thick", po::value<G4double>()->default_value(0.1),
-      "Thickness of layer surrounding layer1")
+      "Thickness of layer surrounding layer1 (mm)")
     ("AlCoating1Z", po::value<G4double>()->default_value(0.1),
-      "Thickness of top Al APD case coating")
+      "Thickness of top Al APD case coating (mm)")
     ("AlCoating2Z", po::value<G4double>()->default_value(0.5),
-      "Thickness of bottom Al APD case coating")
+      "Thickness of bottom Al APD case coating (mm)")
     ("siliconXY", po::value<G4double>()->default_value(10.),
-      "XY dimension of silicon APD chip")
+      "XY dimension of silicon APD chip (mm)")
     ("siliconZ", po::value<G4double>()->default_value(0.6),
-      "Thickness of silicon APD chip")
+      "Thickness of silicon APD chip (mm)")
     ("casingX", po::value<G4double>()->default_value(13.7),
-      "X dimension of APD ceramic casing")
+      "X dimension of APD ceramic casing (mm)")
     ("casingY", po::value<G4double>()->default_value(14.5),
-      "Y dimension of APD ceramic casing")
+      "Y dimension of APD ceramic casing (mm)")
     ("casingZ", po::value<G4double>()->default_value(1.78),
-      "Thickness of APD ceramic casing")
+      "Thickness of APD ceramic casing (mm)")
     ("epoxyX", po::value<G4double>()->default_value(11.7),
-      "X dimension of epoxy on APD")
+      "X dimension of epoxy on APD (mm)")
     ("epoxyY", po::value<G4double>()->default_value(12.5),
-      "Y dimension of epoxy on APD")
+      "Y dimension of epoxy on APD (mm)")
     ("epoxyZ", po::value<G4double>()->default_value(0.6),
-      "Thickness of epoxy on APD")
+      "Thickness of epoxy on APD (mm)")
     ("APDAlCaseThick", po::value<G4double>()->default_value(5.),
-      "Thickness of rim on Al APD case")
+      "Thickness of rim on Al APD case (mm)")
     ("APDAlCaseZ", po::value<G4double>()->default_value(10.),
-      "Thickness of Al APD case")
+      "Thickness of Al APD case (mm)")
     ("APDSlotDepth", po::value<G4double>()->default_value(5.),
-      "How much of the crystal is in the Al case")
+      "How much of the crystal is in the Al case (mm)")
     ("crysMat", po::value<std::string>()->default_value("LYSO"),
       "Crystal material")
     ("layer1Mat", po::value<std::string>()->default_value("G4_Galactic"),
@@ -64,8 +64,30 @@ singCrysConfig::singCrysConfig()
     ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
-    ("LYSORIndexFile", po::value<std::string>()
-      ->default_value("LYSO_RIndex.dat"), "File name for LYSO refractive index")
+    ("ScintYield", po::value<G4double>()->default_value(26.),
+      "Scintillation yield (/MeV)")
+    ("ResScale", po::value<G4double>()->default_value(1.0),
+      "Resolution scale")
+    ("TimeConst", po::value<G4double>()->default_value(40.),
+      "Time constant for scintillation (ns)")
+    ("dataPath", po::value<std::string>()->default_value(""),
+      "Path to data files")
+    ("crysRIndexFile", po::value<std::string>()
+      ->default_value("LYSO_RIndex.dat"), "File name for crys refractive index")
+    ("crysAbsFile", po::value<std::string>()->default_value("LYSO_Abs.dat"),
+      "File name for crys absorption length (values in mm)")
+    ("crysRayFile", po::value<std::string>()->default_value("LYSO_Ray.dat"),
+      "File name for crys Rayleigh scattering length (values in mm)")
+    ("crysScintFile", po::value<std::string>()->default_value("LYSO_Scint.dat"),
+      "File name for crys scintillation intensity")
+    ("SiQEffFile", po::value<std::string>()->default_value("Si_QEff.dat"),
+      "File name for silicon quantum efficiency")
+    ("SiReflFile", po::value<std::string>()->default_value("Si_Refl.dat"),
+      "File name for silicon reflectivity")
+    ("AlRIndexRFile", po::value<std::string>()->default_value("Al_RIndexR.dat"),
+      "File name for real component of aluminum refractive index")
+    ("AlRIndexIFile", po::value<std::string>()->default_value("Al_RIndexI.dat"),
+      "File name for imaginary component of aluminum refractive index")
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);

@@ -79,13 +79,9 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
   else if (material.compareTo("G4_Al") == 0)
     return generateAlTable();
   else if (material.compareTo("LYSO") == 0)
-    return generateLYSOTable();
-  else if (material.compareTo("G4_Si") == 0)
-    return generateSiTable();
+    return generateCrysTable();
   else if (material.compareTo("Epoxy") == 0)
     return generateRIndexTable(1.50);
-  else if (material.compareTo("G4_ALUMINUM_OXIDE") == 0)
-    return generateCeramicTable();
   else
   {
     G4cerr << "Unable to find material " << material
@@ -119,46 +115,40 @@ G4SurfaceType singCrysDetectorConstruction::
     return dielectric_dielectric;
 }
 
-// Constructs and returns material properties table for LYSO
-G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
+// Constructs and returns material properties table for the crystal
+G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
 {
+  // Get config options map
   po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
-  G4String infileName = (G4String) config["LYSORIndexFile"].as<std::string>();
-  singCrysReadFile RIndex = singCrysReadFile(infileName);
-
-  const G4int nEntries = 7;
-  G4double PhotonEnergy[nEntries] =
-      {2.271*eV, 2.403*eV, 2.551*eV, 2.690*eV, 2.844*eV, 2.952*eV, 3.062*eV};
-
-  G4double Absorption[nEntries] = 
-      {40*cm, 40*cm, 40*cm, 40*cm, 40*cm, 40*cm, 40*cm};
-
-  G4double Rayleigh[nEntries] = 
-      {260*cm, 260*cm, 260*cm, 260*cm, 260*cm, 260*cm, 260*cm};
-
-  const G4int nEntriesScint = 11;
-  G4double ScintilPhotonEnergy[nEntriesScint] = 
-    {2.138*eV, 2.214*eV, 2.296*eV, 2.385*eV, 2.480*eV, 2.583*eV, 2.696*eV,
-     2.818*eV, 2.952*eV, 3.100*eV, 3.263*eV};
-  G4double Scintil[nEntriesScint] =
-    {0.002, 0.002, 0.003, 0.004, 0.008, 0.018, 0.045, 0.090, 0.118, 0.116,
-      0.002};
-
+  // Get relevant config options
+  G4String dataPath = (G4String) config["dataPath"].as<std::string>();
+  G4String fileRIndex = (G4String) config["crysRIndexFile"].as<std::string>();
+  G4String fileAbs = (G4String) config["crysAbsFile"].as<std::string>();
+  G4String fileRay = (G4String) config["crysRayFile"].as<std::string>();
+  G4String fileScint = (G4String) config["crysScintFile"].as<std::string>();
+  // Read in files
+  singCrysReadFile RIndex = singCrysReadFile(dataPath + fileRIndex);
+  singCrysReadFile Abs = singCrysReadFile(dataPath + fileAbs);
+  singCrysReadFile Ray = singCrysReadFile(dataPath + fileRay);
+  singCrysReadFile Scint = singCrysReadFile(dataPath + fileScint);
+  
   // Define table and add properties
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
-
   table->AddProperty("RINDEX", RIndex.GetEnergies(), RIndex.GetVals(),
     RIndex.GetNEntries())->SetSpline(true);
-  table->AddProperty("ABSLENGTH", PhotonEnergy, Absorption, nEntries)
-      ->SetSpline(true);
-  table->AddProperty("RAYLEIGH", PhotonEnergy, Rayleigh, nEntries)
-      ->SetSpline(true);
-  table->AddProperty("FASTCOMPONENT", ScintilPhotonEnergy, Scintil,
-      nEntriesScint)->SetSpline(true);
+  table->AddProperty("ABSLENGTH", Abs.GetEnergies(), Abs.GetVals(),
+    Abs.GetNEntries())->SetSpline(true);
+  table->AddProperty("RAYLEIGH", Ray.GetEnergies(), Ray.GetVals(),
+    Ray.GetNEntries())->SetSpline(true);
+  table->AddProperty("FASTCOMPONENT", Scint.GetEnergies(), Scint.GetVals(),
+    Scint.GetNEntries())->SetSpline(true);
 
-  table->AddConstProperty("SCINTILLATIONYIELD", 26./keV);
-  table->AddConstProperty("RESOLUTIONSCALE", 1.0); //TODO: FIX
-  table->AddConstProperty("FASTTIMECONSTANT", 40.*ns);
+  G4double scintYield = config["ScintYield"].as<G4double>();
+  G4double resScale = config["ResScale"].as<G4double>();
+  G4double timeConst = config["TimeConst"].as<G4double>();
+  table->AddConstProperty("SCINTILLATIONYIELD", scintYield / keV);
+  table->AddConstProperty("RESOLUTIONSCALE", resScale); //TODO: FIX
+  table->AddConstProperty("FASTTIMECONSTANT", timeConst * ns);
 
   return table;
 }
@@ -167,18 +157,21 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateLYSOTable()
 G4MaterialPropertiesTable* singCrysDetectorConstruction::
   generateSiSurfaceTable()
 {
-  const G4int nEntries = 12;
-  G4double PhotonEnergy[nEntries] = {1.378*eV, 1.459*eV, 1.550*eV, 1.653*eV,
-    1.771*eV, 1.908*eV, 2.067*eV, 2.254*eV, 2.480*eV, 2.755*eV, 3.100*eV,
-    3.543*eV};
-  G4double Efficiency[nEntries] = {0.69, 0.78, 0.82, 0.85, 0.85, 0.86, 0.85,
-    0.84, 0.81, 0.75, 0.65, 0.50};
-  //G4double Efficiency[nEntries] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
-  G4double Reflectivity[nEntries] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-    0., 0.};
+  // Get config options map
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  // Get relevant config options
+  G4String dataPath = (G4String) config["dataPath"].as<std::string>();
+  G4String fileEff = (G4String) config["SiQEffFile"].as<std::string>();
+  G4String fileRefl = (G4String) config["SiReflFile"].as<std::string>();
+  // Read in files
+  singCrysReadFile Eff = singCrysReadFile(dataPath + fileEff);
+  singCrysReadFile Refl = singCrysReadFile(dataPath + fileRefl);
+  // Generate table and add properties
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
-  table->AddProperty("EFFICIENCY", PhotonEnergy, Efficiency, nEntries);
-  table->AddProperty("REFLECTIVITY", PhotonEnergy, Reflectivity, nEntries);
+  table->AddProperty("EFFICIENCY", Eff.GetEnergies(), Eff.GetVals(),
+    Eff.GetNEntries())->SetSpline(true);
+  table->AddProperty("REFLECTIVITY", Refl.GetEnergies(), Refl.GetVals(),
+    Refl.GetNEntries());
   return table;
 }
 
@@ -186,43 +179,21 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
 G4MaterialPropertiesTable* singCrysDetectorConstruction::
   generateAlTable()
 {
-  const G4int nEntries = 11;
-  // Define photon energies
-  G4double PhotonEnergy[nEntries] =
-  {1.550*eV, 1.653*eV, 1.771*eV, 1.908*eV, 2.067*eV, 2.254*eV, 2.480*eV,
-   2.755*eV, 3.100*eV, 3.543*eV, 4.133*eV};
-  // Define refractive index
-  G4double RefractiveIndexReal[nEntries] =
-  {2.767, 2.367, 1.921, 1.558, 1.262, 1.015, 0.8126, 0.6332, 0.4879,
-  0.3667, 0.26418};
-  G4double RefractiveIndexImaginary[nEntries] =
-  {8.3543, 8.4177, 8.1420, 7.7124, 7.1855, 6.6273, 6.0481, 5.4544, 4.8355,
-   4.2127, 3.5787};
+  // Get config options map
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  // Get relevant config options
+  G4String dataPath = (G4String) config["dataPath"].as<std::string>();
+  G4String fileRIndexR = (G4String) config["AlRIndexRFile"].as<std::string>();
+  G4String fileRIndexI = (G4String) config["AlRIndexIFile"].as<std::string>();
+  // Read in files
+  singCrysReadFile RIndexR = singCrysReadFile(dataPath + fileRIndexR);
+  singCrysReadFile RIndexI = singCrysReadFile(dataPath + fileRIndexI);
   // Construct table and add refractive index property.
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
-  table->AddProperty("REALRINDEX", PhotonEnergy, RefractiveIndexReal,
-                     nEntries)->SetSpline(true);
-  table->AddProperty("IMAGINARYRINDEX", PhotonEnergy, RefractiveIndexImaginary,
-                     nEntries)->SetSpline(true);
-  return table;
-}
-
-// Constructs and returns material properties table for crystalline silicon
-G4MaterialPropertiesTable* singCrysDetectorConstruction::
-  generateSiTable()
-{
-  const G4int nEntries = 11;
-  // Define photon energies
-  G4double PhotonEnergy[nEntries] =
-  {1.550*eV, 1.653*eV, 1.771*eV, 1.908*eV, 2.067*eV, 2.254*eV, 2.480*eV,
-   2.755*eV, 3.100*eV, 3.543*eV, 4.133*eV};
-  // Define refractive index
-  G4double RefractiveIndex[nEntries] = 
-  {3.696, 3.734, 3.783, 3.849, 3.939, 4.072, 4.286, 4.687, 5.646,
-   5.446, 4.966};
-  // Construct table and add refractive index property.
-  G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
-  table->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries);
+  table->AddProperty("REALRINDEX", RIndexR.GetEnergies(), RIndexR.GetVals(),
+    RIndexR.GetNEntries())->SetSpline(true);
+  table->AddProperty("IMAGINARYRINDEX", RIndexI.GetEnergies(),
+    RIndexI.GetVals(), RIndexI.GetNEntries())->SetSpline(true);
   return table;
 }
 
@@ -247,14 +218,10 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
 G4MaterialPropertiesTable* singCrysDetectorConstruction::
   generateRIndexTable(G4double rindex)
 {
-  const G4int nEntries = 7;
-  
+  const G4int nEntries = 1; 
   // Define energies and refractive indices (all unity)
-  G4double PhotonEnergy[nEntries] =
-    {3.060*eV, 2.951*eV, 2.843*eV, 2.689*eV, 2.550*eV, 2.402*eV, 2.270*eV};
-  G4double RefractiveIndex[nEntries] = 
-    {rindex, rindex, rindex, rindex, rindex, rindex, rindex};
-
+  G4double PhotonEnergy[nEntries] = {3.*eV};
+  G4double RefractiveIndex[nEntries] = {rindex}; 
   // Construct table and add refractive index
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
   table->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries);
@@ -480,13 +447,11 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4Material* APDMat = nist->FindOrBuildMaterial("G4_AIR");
   G4String casingMatStr = "G4_ALUMINUM_OXIDE";
   G4Material* casingMat = nist->FindOrBuildMaterial(casingMatStr);
-  casingMat->SetMaterialPropertiesTable(generateTable(casingMatStr));
   G4String epoxyMatStr = "Epoxy";
   G4Material* epoxyMat = nist->FindOrBuildMaterial(epoxyMatStr);
   epoxyMat->SetMaterialPropertiesTable(generateTable(epoxyMatStr));
   G4String siliconMatStr = "G4_Si";
   G4Material* siliconMat = nist->FindOrBuildMaterial(siliconMatStr);
-  siliconMat->SetMaterialPropertiesTable(generateTable(siliconMatStr));
 
 // Define logical volumes
   G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
@@ -550,7 +515,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   optCasing->SetFinish(ground);
   optCasing->SetSigmaAlpha(0.2);
   optCasing->SetType(surfaceType(casingMatStr));
-  optCasing->SetMaterialPropertiesTable(generateTable(casingMatStr));
+  optCasing->SetMaterialPropertiesTable(generateCeramicTable());
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing",
     logicCasing, optCasing);
 
