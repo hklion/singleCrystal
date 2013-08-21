@@ -1,10 +1,17 @@
 #include "singCrysUIsession.hh"
+#include "singCrysConfig.hh"
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
 
 // Constructor. Open files.
 singCrysUIsession::singCrysUIsession() : G4UIsession()
 {
-  logfile.open("singleCrystal.log");
-  errfile.open("singleCrystal.err");
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  G4String logfileName = (G4String) config["logfileName"].as<std::string>();
+  G4String errfileName = (G4String) config["errfileName"].as<std::string>();
+  logfile.open(logfileName);
+  errfile.open(errfileName);
 }
 
 // Destructor

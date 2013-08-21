@@ -104,6 +104,12 @@ singCrysConfig::singCrysConfig()
       "Type of particle")
     ("particleEnergy", po::value<G4double>()->default_value(105),
       "Energy of particle (MeV)")
+    ("logfileName",
+      po::value<std::string>()->default_value("singleCrystal.log"),
+      "Name of log file")
+    ("errfileName",
+      po::value<std::string>()->default_value("singleCrystal.err"),
+      "Name of error file")
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);
