@@ -110,6 +110,8 @@ singCrysConfig::singCrysConfig()
     ("errfileName",
       po::value<std::string>()->default_value("singleCrystal.err"),
       "Name of error file")
+    ("optVerbosity", po::value<G4int>()->default_value(0),
+      "Verbosity for optical processes") 
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);

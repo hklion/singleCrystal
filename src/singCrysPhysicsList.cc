@@ -19,6 +19,9 @@
 #include "G4EmSaturation.hh"
 //TODO: Mie scattering?
 
+#include "singCrysConfig.hh"
+#include <boost/program_options.hpp>
+
 singCrysPhysicsList::singCrysPhysicsList()
 {
   theCerenkovProcess = NULL;
@@ -53,7 +56,7 @@ void singCrysPhysicsList::ConstructBosons()
     G4Geantino::GeantinoDefinition();
     G4ChargedGeantino::ChargedGeantinoDefinition();
 
-    //  gamma
+    // gamma
     G4Gamma::GammaDefinition();
 
     // optical photon
@@ -70,7 +73,7 @@ void singCrysPhysicsList::ConstructLeptons()
   // mu+/-
   G4MuonPlus::MuonPlusDefinition();
   G4MuonMinus::MuonMinusDefinition();
-  //nu_e
+  // nu_e
   G4NeutrinoE::NeutrinoEDefinition();
   G4AntiNeutrinoE::AntiNeutrinoEDefinition();
   // nu_mu
@@ -214,7 +217,11 @@ void singCrysPhysicsList::ConstructOp()
   theBoundaryProcess           = new G4OpBoundaryProcess();
   theSpecialCutsProcess        = new G4UserSpecialCuts();
 
-  SetVerbose(0);
+  // Get config options map and get verbosity
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  G4int optVerbosity = config["optVerbosity"].as<G4int>();
+
+  SetVerbose(optVerbosity); // Set verbosity
 
   theCerenkovProcess->SetMaxNumPhotonsPerStep(20);
   theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
