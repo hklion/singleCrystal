@@ -132,7 +132,6 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
     (G4String) config["crysSlowScintFile"].as<std::string>();
   // Check whether there is a second scintillation component file. If there
   // isn't, assume that there is only one component.
-  G4cout << fileSlowScint.compareTo("") << " " << fileSlowScint << G4endl;
   if (fileSlowScint.compareTo("") == 0)
     twoComponent = false;
   // Read in files
@@ -169,7 +168,6 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
     G4double yieldRatio = config["yieldRatio"].as<G4double>();
     table->AddConstProperty("SLOWTIMECONSTANT", slowTimeConst * ns);
     table->AddConstProperty("YIELDRATIO", yieldRatio);
-    G4cout << slowTimeConst << G4endl;
   }
   return table;
 }

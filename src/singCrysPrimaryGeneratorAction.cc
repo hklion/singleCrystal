@@ -9,22 +9,28 @@
 #include "G4ParticleDefinition.hh"
 #include "globals.hh"
 #include "G4SystemOfUnits.hh"
+#include <boost/program_options.hpp>
+#include "singCrysConfig.hh"
 
 #include "Randomize.hh"
+
+namespace po = boost::program_options;
 
 // Constructor: create particle gun
 singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
 {
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
   // Declare the particle gun
-  G4int n_particle = 1;
+  G4int n_particle = config["n_particle"].as<G4int>();
   particleGun = new G4ParticleGun(n_particle);
   
   // Choose the particle for the gun
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4String particleName = "gamma";
+  G4String particleName = (G4String) config["particleName"].as<std::string>();
   particleGun->
     SetParticleDefinition(particleTable->FindParticle(particleName));
-  particleGun->SetParticleEnergy(10.*keV);
+  G4double particleEnergy = config["particleEnergy"].as<G4double>();
+  particleGun->SetParticleEnergy(particleEnergy * MeV);
 }
 
 // Destructor: delete the particle gun

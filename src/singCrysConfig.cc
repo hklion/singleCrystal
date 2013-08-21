@@ -85,7 +85,7 @@ singCrysConfig::singCrysConfig()
     ("crysFastScintFile",
       po::value<std::string>()->default_value("LYSO_FastScint.dat"),
       "File name for crys fast component scintillation intensity")
-   ("crysSlowScintFile",
+    ("crysSlowScintFile",
       po::value<std::string>()->default_value(""),
       "File name for crys slow component scintillation intensity")
     ("SiQEffFile", po::value<std::string>()->default_value("Si_QEff.dat"),
@@ -96,6 +96,12 @@ singCrysConfig::singCrysConfig()
       "File name for real component of aluminum refractive index")
     ("AlRIndexIFile", po::value<std::string>()->default_value("Al_RIndexI.dat"),
       "File name for imaginary component of aluminum refractive index")
+    ("n_particle", po::value<G4int>()->default_value(1),
+      "Number of particles per event")
+    ("particleName", po::value<std::string>()->default_value("e-"),
+      "Type of particle")
+    ("particleEnergy", po::value<G4double>()->default_value(105),
+      "Energy of particle (MeV)")
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);

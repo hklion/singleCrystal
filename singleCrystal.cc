@@ -27,6 +27,21 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
+
+  po::options_description desc;
+  desc.add_options()
+    ("config,c", po::value<std::string>()->default_value("config.ini"),
+      "configuration fle")
+    ("script", po::value<std::string>()->default_value(""),
+      "script to run in batch mode");
+  po::positional_options_description pos_options;
+  pos_options.add("script", 1);
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(desc).
+    positional(pos_options).run(), vm);
+  po::notify(vm);
+  singCrysConfig::LoadFile((G4String) vm["config"].as<std::string>());
+
   // Choose the random engine
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
 
@@ -44,19 +59,6 @@ int main(int argc, char** argv)
 
   // Add optional run action class
 //  runManager->SetUserAction(new singCrysRunAction());
-  po::options_description desc;
-  desc.add_options()
-    ("config,c", po::value<std::string>()->default_value("config.ini"),
-      "configuration fle")
-    ("script", po::value<std::string>()->default_value(""),
-      "script to run in batch mode");
-  po::positional_options_description pos_options;
-  pos_options.add("script", 1);
-  po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).options(desc).
-    positional(pos_options).run(), vm);
-  po::notify(vm);
-  singCrysConfig::LoadFile((G4String) vm["config"].as<std::string>());
 
   // Initialize kernel
   runManager->Initialize();
