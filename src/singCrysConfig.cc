@@ -64,6 +64,8 @@ singCrysConfig::singCrysConfig()
     ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
+    ("ceramicRefl", po::value<G4double>()->default_value(0.9),
+      "Reflectance of ceramic")
     ("scintYield", po::value<G4double>()->default_value(26.),
       "Scintillation yield (/MeV)")
     ("resScale", po::value<G4double>()->default_value(1.0),

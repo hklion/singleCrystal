@@ -219,11 +219,15 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::
 G4MaterialPropertiesTable* singCrysDetectorConstruction::
   generateCeramicTable()
 {
+  // Get config options map
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  // Get reflectivity
+  G4double ceramicRefl = config["ceramicRefl"].as<G4double>();
   const G4int nEntries = 1;
   // Define photon energy
   G4double PhotonEnergy[nEntries] = {3.*eV};
   // Define reflectivity
-  G4double Reflectivity[nEntries] = {0.9};
+  G4double Reflectivity[nEntries] = {ceramicRefl};
   G4double Efficiency[nEntries] = {0.};
   // Construct table and add reflectivity property
   G4MaterialPropertiesTable* table = new G4MaterialPropertiesTable();
