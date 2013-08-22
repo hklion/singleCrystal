@@ -105,9 +105,6 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
      * \return The G4SurfaceType appropriate for the surface
      */
     G4SurfaceType surfaceType(G4String material1, G4String material2);
-    
-    // Energy/length limits
-    G4UserLimits* fLimit;
 };
 
 #endif

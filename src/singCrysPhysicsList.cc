@@ -13,7 +13,6 @@
 #include "G4OpAbsorption.hh"
 #include "G4OpRayleigh.hh"
 #include "G4OpBoundaryProcess.hh"
-#include "G4UserSpecialCuts.hh"
 
 #include "G4LossTableManager.hh"
 #include "G4EmSaturation.hh"
@@ -215,7 +214,6 @@ void singCrysPhysicsList::ConstructOp()
   theRayleighScatteringProcess = new G4OpRayleigh();
 //  theMieHGScatteringProcess    = new G4OpMieHG();
   theBoundaryProcess           = new G4OpBoundaryProcess();
-  theSpecialCutsProcess        = new G4UserSpecialCuts();
 
   // Get config options map and get verbosity
   po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
@@ -258,7 +256,6 @@ void singCrysPhysicsList::ConstructOp()
       pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
 //      pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
       pmanager->AddDiscreteProcess(theBoundaryProcess);
-      pmanager->AddDiscreteProcess(theSpecialCutsProcess);
     }
   }
 }
@@ -272,7 +269,6 @@ void singCrysPhysicsList::SetVerbose(G4int verbose)
   theRayleighScatteringProcess->SetVerboseLevel(verbose);
 //  theMieHGScatteringProcess->SetVerboseLevel(verbose);
   theBoundaryProcess->SetVerboseLevel(verbose);
-  theSpecialCutsProcess->SetVerboseLevel(verbose);
 }
 
 void singCrysPhysicsList::SetCuts()

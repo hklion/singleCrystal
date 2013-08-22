@@ -13,7 +13,6 @@ class G4OpAbsorption;
 class G4OpRayleigh;
 //class G4OpMieHG;
 class G4OpBoundaryProcess;
-class G4UserSpecialCuts;
 
 class singCrysPhysicsList: public G4VUserPhysicsList
 {
@@ -44,7 +43,6 @@ class singCrysPhysicsList: public G4VUserPhysicsList
     G4OpRayleigh*           theRayleighScatteringProcess;
 //    G4OpMieHG*            theMieHGScatteringProcess;
     G4OpBoundaryProcess*    theBoundaryProcess;
-    G4UserSpecialCuts*      theSpecialCutsProcess;
 };
 
 #endif

@@ -25,8 +25,7 @@
 
 // Constructor: define materials
 singCrysDetectorConstruction::singCrysDetectorConstruction()
-: G4VUserDetectorConstruction(),
-  fLimit(NULL)
+: G4VUserDetectorConstruction()
 { 
   DefineMaterials();
 }
@@ -259,8 +258,11 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Also get config file parameters
   po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
 
+  // Check overlaps in volumes
+  G4bool checkOverlaps = config["checkOverlaps"].as<G4bool>();
+
+//====================NUMBERS=============================
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
-  //G4double crysSideLength = sqrt(18/(3*sqrt(3)))*cm;
   // Length along flats
   G4double crysSideLength = config["crysSideLength"].as<G4double>();
   G4double crysSizeZ = config["crysSizeZ"].as<G4double>();  // Z axis length
@@ -296,87 +298,126 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // the polygon's sides.
   G4double crysRadLen = crysSideLength / (2 * std::tan(pi / crysNumSides));
   G4double crysMaxXYRad = crysSideLength / (2 * std::sin(pi / crysNumSides));
-  
-  // Define materials for crystals and layering
-  G4String crysMatStr = (G4String) config["crysMat"].as<std::string>();
-  G4Material* crysMat = nist->FindOrBuildMaterial(crysMatStr);
-  crysMat->SetMaterialPropertiesTable(generateTable(crysMatStr));
-  G4String layer1MatStr = (G4String) config["layer1Mat"].as<std::string>();
-  G4Material* layer1Mat = nist->FindOrBuildMaterial(layer1MatStr);
-  layer1Mat->SetMaterialPropertiesTable(generateTable(layer1MatStr));
-  G4String layer2MatStr = (G4String) config["layer2Mat"].as<std::string>();
-  G4Material* layer2Mat = nist->FindOrBuildMaterial(layer2MatStr);
-  layer2Mat->SetMaterialPropertiesTable(generateTable(layer2MatStr));
-  // Check overlaps in volumes
-  G4bool checkOverlaps = config["checkOverlaps"].as<G4bool>();
-
   // World parameters
   G4double worldSizeXY = 5 * crysMaxXYRad; // Maximum width is twice radius
   G4double worldSizeZ = 5 * crysSizeZ;
-  G4String worldMatStr = (G4String) config["worldMat"].as<std::string>();
-  G4Material* worldMat = nist->FindOrBuildMaterial(worldMatStr);
-  worldMat->SetMaterialPropertiesTable(generateTable(worldMatStr));
 
-  // Define world
-  G4Box* solidWorld = new G4Box("World",
-    0.5 * worldSizeXY, 0.5 * worldSizeXY, 0.5 * worldSizeZ);
-
-  G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld, // solid
-                                                    worldMat,   // material
-                                                    "World");   // name
-  // Place the world
-  G4VPhysicalVolume* physWorld =
-    new G4PVPlacement(0,                // no rotation
-                      G4ThreeVector(),  // at the origin
-                      logicWorld,       // logical volume
-                      "World",          // name
-                      0,                // mother volume
-                      false,            // no boolean operation
-                      0,                // copy number
-                      checkOverlaps);   // overlaps checking
-
-
-  // Define crystal: for the sake of simplicity, just a box for now
-//  G4Box* solidCrys = new G4Box("Crystal",
-//    0.5 * crysSideLength, 0.5 * crysSideLength, 0.5 * crysSizeZ);
   // Parameters for the crystal geometry
   G4double crysZPlaneCoords[2] = {-0.5 * crysSizeZ, 0.5 * crysSizeZ};
   G4double crysRInner[2] = {0, 0};
   G4double crysROuter[2] = {crysRadLen, crysRadLen};
-
   // Angle by which the crystal should be rotated so that the top of
   // the world is always parallel to a face. It is equal to the sum of
   // the interior angles of the polygon divided by the number of sides,
   // divided by two.
   G4double rotation = (crysNumSides - 2) * pi / (2 * crysNumSides);
-  // Define crystal
-  G4Polyhedra* solidCrys = new G4Polyhedra("Crystal",
-                                     rotation,
-                                     2*pi + rotation,
-                                     crysNumSides,
-                                     2,
-                                     crysZPlaneCoords,
-                                     crysRInner,
-                                     crysROuter);
-
-  G4LogicalVolume* logicCrys = new G4LogicalVolume(solidCrys,   // solid
-                                                   crysMat,     // material
-                                                   "Crystal");  // name
-
-  // Define two other polyhedra to serve as layers surrounding the crystal.
-  // The first will be a user-defined amount larger than the crystal, and
-  // the second will be a user-defined amount larger than the first. The
-  // crystal will be placed in the first, and the first will be placed in
-  // the second. This will create layers.
-
+  // Parameters for two other polyhedra to serve as layers surrounding the
+  // crystal. The first will be 'layer1Thick' larger than the crystal, and the
+  // second will be 'layer2Thick' larger than the first. The crystal will be
+  // placed in the first, and the first will be placed in the second. This will
+  // create layers.
+  // Radial lengths of the n-gonal faces
   G4double layer1RadLen = crysRadLen + layer1Thick;
   G4double layer2RadLen = layer1RadLen + layer2Thick;
+  // Assign those sizes as the radial lengths of both faces
   G4double layer1ROuter[2] = {layer1RadLen, layer1RadLen};
   G4double layer2ROuter[2] = {layer2RadLen, layer2RadLen};
-  G4double layer1ZPlaneCoords[2] = {0.5 * crysSizeZ + layer1Thick,
-                                    -0.5 * crysSizeZ};
+  // Placement of the n-gonal faces in z coordinate space
+  G4double layer1ZPlaneCoords[2] =
+    {0.5 * crysSizeZ + layer1Thick, -0.5 * crysSizeZ};
   G4double layer2ZPlaneCoords[2] =
     {0.5 * crysSizeZ + layer1Thick + layer2Thick, -0.5 * crysSizeZ};
+
+  // Make aluminum casing for APD. It is made by making a G4Polyhedra with
+  // the same number of sides as the crystal. Then the translated cyrstal
+  // is subtracted in order to make a dent for the coatings and crystal.
+  // Another subtraction is done to make a place for the APD.
+  // Radial length of the n-gonal face of the case
+  G4double APDAlCaseRadLen = layer2RadLen + APDAlCaseThick;
+  // Assign that size as the radial length of both faces
+  G4double APDAlCaseROuter[2] = {APDAlCaseRadLen, APDAlCaseRadLen};
+  // Placement of the n-gonal faces in z coordinate space
+  G4double APDAlCaseZPlaneCoords[2] = {-0.5 * APDAlCaseZ, 0.5 * APDAlCaseZ};
+  // Translation of APD case for the subtraction of the crystal from the case
+  G4ThreeVector translCrysAPDCase = G4ThreeVector(0., 0.,
+    0.5 * (crysSizeZ + APDAlCaseZ) - APDSlotDepth - AlCoating1Z - AlCoating2Z);
+  // Translation of APD case for the subtraction of the APD from the case
+  G4ThreeVector translAPDCase = G4ThreeVector(0., 0., 0.5 * APDAlCaseZ
+    - 0.5 * casingZ - APDSlotDepth - AlCoating1Z - AlCoating2Z);
+  // Placement of the silicon in the silicon APD chip with respect to the
+  // whole APD
+  G4double siliconPlaceZ = (0.5 * (casingZ - siliconZ) - epoxyZ);
+  // Make coatings for aluminum casing. Define the z coordinates of their
+  // n-gonal faces
+  G4double AlCoating1ZPlaneCoords[2] = {-0.5 * crysSizeZ,
+    -(0.5 * crysSizeZ + AlCoating1Z)};
+  G4double AlCoating2ZPlaneCoords[2] = {-(0.5 * crysSizeZ + AlCoating1Z),
+    -(0.5 * crysSizeZ + AlCoating1Z + AlCoating2Z)};
+  // APD placement along the z axis relative to the world volume
+  G4double APDPlaceZ = -(0.5 * (crysSizeZ + casingZ) +
+    AlCoating1Z + AlCoating2Z);
+  // Placement of aluminum APD case along the Z axis
+  G4double APDCasePlacementZ = -(0.5 * (crysSizeZ + APDAlCaseZ) - APDSlotDepth);  // Translation of the epoxy and silcon for placement in the APD solid
+  G4ThreeVector translEpoxy = G4ThreeVector(0.0*mm,0.4*mm,
+    0.5 * (casingZ - epoxyZ));
+  G4ThreeVector translSilicon = G4ThreeVector(0.0*mm, 0.4*mm,
+    0.5 * (casingZ - siliconZ) - epoxyZ);
+
+
+  // Define material strings. APD materials are hard coded, but other
+  // materials are read in from the config file.
+  G4String crysMatStr = (G4String) config["crysMat"].as<std::string>();
+  G4String layer1MatStr = (G4String) config["layer1Mat"].as<std::string>();
+  G4String layer2MatStr = (G4String) config["layer2Mat"].as<std::string>();
+  G4String worldMatStr = (G4String) config["worldMat"].as<std::string>();
+  G4String APDMatStr = "G4_AIR";
+  G4String casingMatStr = "G4_ALUMINUM_OXIDE";
+  G4String epoxyMatStr = "Epoxy";
+  G4String siliconMatStr = "G4_Si";
+  G4String APDAlCaseMatStr = "G4_Al";
+  G4String coating1MatStr = (G4String) config["coating1Mat"].as<std::string>();
+  G4String coating2MatStr = (G4String) config["coating2Mat"].as<std::string>();
+
+  // Define materials from the previously defined strings.
+  G4Material* crysMat = nist->FindOrBuildMaterial(crysMatStr);
+  G4Material* layer1Mat = nist->FindOrBuildMaterial(layer1MatStr);
+  G4Material* layer2Mat = nist->FindOrBuildMaterial(layer2MatStr);
+  G4Material* worldMat = nist->FindOrBuildMaterial(worldMatStr);
+  G4Material* APDMat = nist->FindOrBuildMaterial(APDMatStr);
+  G4Material* casingMat = nist->FindOrBuildMaterial(casingMatStr);
+  G4Material* epoxyMat = nist->FindOrBuildMaterial(epoxyMatStr);
+  G4Material* siliconMat = nist->FindOrBuildMaterial(siliconMatStr);
+  G4Material* APDAlCaseMat = nist->FindOrBuildMaterial(APDAlCaseMatStr);
+  G4Material* coating1Mat = nist->FindOrBuildMaterial(coating1MatStr);
+  G4Material* coating2Mat = nist->FindOrBuildMaterial(coating2MatStr);
+
+  // Get the material properties tables for all of the materials that
+  // interact with optical photons.
+  crysMat->SetMaterialPropertiesTable(generateTable(crysMatStr));
+  layer1Mat->SetMaterialPropertiesTable(generateTable(layer1MatStr));
+  layer2Mat->SetMaterialPropertiesTable(generateTable(layer2MatStr));
+  worldMat->SetMaterialPropertiesTable(generateTable(worldMatStr));
+  epoxyMat->SetMaterialPropertiesTable(generateTable(epoxyMatStr));
+  APDAlCaseMat->SetMaterialPropertiesTable(generateTable(APDAlCaseMatStr));
+  coating1Mat->SetMaterialPropertiesTable(generateTable(coating1MatStr));
+  coating2Mat->SetMaterialPropertiesTable(generateTable(coating2MatStr));
+
+  // Define the necessary solids for the geometry.
+  // Define world
+  G4Box* solidWorld = new G4Box("World",
+                                0.5 * worldSizeXY,
+                                0.5 * worldSizeXY,
+                                0.5 * worldSizeZ);
+  // Define crystal
+  G4Polyhedra* solidCrys = new G4Polyhedra("Crystal",
+                                           rotation,
+                                           2*pi + rotation,
+                                           crysNumSides,
+                                           2,
+                                           crysZPlaneCoords,
+                                           crysRInner,
+                                           crysROuter);
+  // Layers surroudning crystals
   G4Polyhedra* solidLayer1 = new G4Polyhedra("Layer 1",
                                             rotation,
                                             2*pi + rotation,
@@ -395,42 +436,209 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                             crysRInner,
                                             layer2ROuter); 
 
-  G4LogicalVolume* logicLayer1 = new G4LogicalVolume(solidLayer1,   // solid
-                                                     layer1Mat,     // material
-                                                     "Layer 1");  // name
+  // Define solids for APD
+  G4Box* solidAPD = new G4Box("APD",
+                              casingX * 0.5,
+                              casingY * 0.5,
+                              casingZ * 0.5);
+  G4Box* solidEpoxy = new G4Box("Epoxy",
+                                epoxyX * 0.5,
+                                epoxyY * 0.5,
+                                epoxyZ * 0.5);
+  G4Box* solidSilicon = new G4Box("SiDetector",
+                                  siliconXY * 0.5,
+                                  siliconXY * 0.5,
+                                  siliconZ * 0.5);
+  // Make casing by subtracting the epoxy and silicon layers from the
+  // full APD solid.
+  G4SubtractionSolid* solidCasingMid = new G4SubtractionSolid("CasingMid",
+                                                              solidAPD,
+                                                              solidEpoxy,
+                                                              0,
+                                                              translEpoxy);
+  G4SubtractionSolid* solidCasing = new G4SubtractionSolid("Casing",
+                                                           solidCasingMid,
+                                                           solidSilicon,
+                                                           0,
+                                                           translSilicon);
 
-  G4LogicalVolume* logicLayer2 = new G4LogicalVolume(solidLayer2,   // solid
-                                                     layer2Mat,     // material
-                                                     "Layer 2");  // name
+  // Aluminum casing for APD. Make it by subtracting out the overlap with
+  // the crystal and the APD itself.
+  G4Polyhedra* solidAlAPDCaseFull = new G4Polyhedra("AlAPDCaseFull",
+                                                    rotation,
+                                                    2*pi + rotation,
+                                                    crysNumSides,
+                                                    2,
+                                                    APDAlCaseZPlaneCoords,
+                                                    crysRInner,
+                                                    APDAlCaseROuter);
+  G4SubtractionSolid* solidAlAPDCaseMid =
+    new G4SubtractionSolid("AlAPDCaseMid",
+                           solidAlAPDCaseFull,
+                           solidLayer2,
+                           0,
+                           translCrysAPDCase);
+  G4SubtractionSolid* solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
+                                                              solidAlAPDCaseMid,
+                                                              solidAPD,
+                                                              0,
+                                                              translAPDCase);
+  // Solids for the coatings for the APD case
+  G4Polyhedra* solidAlCoating1 = new G4Polyhedra("AlCoating1",
+                                                 rotation,
+                                                 2*pi + rotation,
+                                                 crysNumSides,
+                                                 2,
+                                                 AlCoating1ZPlaneCoords,
+                                                 crysRInner,
+                                                 layer2ROuter);
+  G4Polyhedra* solidAlCoating2 = new G4Polyhedra("AlCoating1",
+                                                 rotation,
+                                                 2*pi + rotation,
+                                                 crysNumSides,
+                                                 2,
+                                                 AlCoating2ZPlaneCoords,
+                                                 crysRInner,
+                                                 layer2ROuter);
+
+  // Define the logical volumes from the solids created above
+  G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld,
+                                                    worldMat,                                                                       "World");
+  G4LogicalVolume* logicCrys = new G4LogicalVolume(solidCrys,
+                                                   crysMat,
+                                                   "Crystal");
+  G4LogicalVolume* logicLayer1 = new G4LogicalVolume(solidLayer1,
+                                                     layer1Mat,
+                                                     "Layer 1");
+  G4LogicalVolume* logicLayer2 = new G4LogicalVolume(solidLayer2,
+                                                     layer2Mat,
+                                                     "Layer 2");
+  G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
+                                                  APDMat,
+                                                  "APD");
+  G4LogicalVolume* logicCasing = new G4LogicalVolume(solidCasing,
+                                                     casingMat,
+                                                     "Casing");
+  G4LogicalVolume* logicEpoxy = new G4LogicalVolume(solidEpoxy,
+                                                    epoxyMat,
+                                                    "Epoxy");
+  G4LogicalVolume* logicSilicon = new G4LogicalVolume(solidSilicon,
+                                                      siliconMat,
+                                                      "Silicon");
+  G4LogicalVolume* logicAlAPDCase = new G4LogicalVolume(solidAlAPDCase,
+                                                       APDAlCaseMat,
+                                                       "AlAPDCase");
+  G4LogicalVolume* logicAlCoating1 = new G4LogicalVolume(solidAlCoating1,
+                                                         coating1Mat,
+                                                         "AlCoating1");
+  G4LogicalVolume* logicAlCoating2 = new G4LogicalVolume(solidAlCoating2,
+                                                         coating2Mat,
+                                                         "AlCoating2");
+
+  // Define and place physical volumes
+  // Place the world
+  G4VPhysicalVolume* physWorld =
+    new G4PVPlacement(0,
+                      G4ThreeVector(),
+                      logicWorld,
+                      "World",
+                      0,
+                      false,
+                      0,
+                      checkOverlaps); 
+
   // Place crystal and layers 
-  G4VPhysicalVolume* physCrys = new G4PVPlacement(0,  // no rotation
-                    G4ThreeVector(),  // at the origin
-                    logicCrys,        // logical volume
-                    "Crystal",        // name
-                    logicLayer1,      // mother volume
-                    false,            // no boolean operation
-                    0,                // copy number
-                    checkOverlaps);   // overlaps checking
+  G4VPhysicalVolume* physCrys = new G4PVPlacement(0,
+                                                  G4ThreeVector(),
+                                                  logicCrys,
+                                                  "Crystal",
+                                                  logicLayer1,
+                                                  false,
+                                                  0,
+                                                  checkOverlaps);
 
-  G4VPhysicalVolume* physLayer1 = new G4PVPlacement(0,   // no rotation
-                    G4ThreeVector(),  // at the origin
-                    logicLayer1,      // logical volume
-                    "Layer 1",        // name
-                    logicLayer2,      // mother volume
-                    false,            // no boolean operation
-                    0,                // copy number
-                    checkOverlaps);   // overlaps checking
+  G4VPhysicalVolume* physLayer1 = new G4PVPlacement(0,
+                                                    G4ThreeVector(),
+                                                    logicLayer1,
+                                                    "Layer 1",
+                                                    logicLayer2,
+                                                    false,
+                                                    0,
+                                                    checkOverlaps);
+  G4VPhysicalVolume* physLayer2 = new G4PVPlacement(0,
+                                                    G4ThreeVector(),
+                                                    logicLayer2,
+                                                    "Layer 2",
+                                                    logicWorld,
+                                                    false,
+                                                    0,
+                                                    checkOverlaps);
+  // Place epoxy, casing, and silicon in APD.
+  G4VPhysicalVolume* physEpoxy = new G4PVPlacement(0,
+                                                   translEpoxy,
+                                                   logicEpoxy,
+                                                   "Epoxy",
+                                                   logicAPD,
+                                                   false,
+                                                   0,
+                                                   checkOverlaps);
+  G4VPhysicalVolume* physSilicon = new G4PVPlacement(0,
+                                                     translSilicon,
+                                                     logicSilicon,
+                                                     "Silicon",
+                                                     logicAPD,
+                                                     false,
+                                                     0,
+                                                     checkOverlaps);
+  G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
+                                                    G4ThreeVector(),
+                                                    logicCasing,
+                                                    "Casing",
+                                                    logicAPD,
+                                                    false,
+                                                    0,
+                                                    checkOverlaps);
+  // Place coatings on aluminum APD case
+  G4VPhysicalVolume* physAlCoating1 = new G4PVPlacement(0,
+                                                        G4ThreeVector(),
+                                                        logicAlCoating1,
+                                                        "AlCoating1",
+                                                        logicWorld,
+                                                        false,
+                                                        0,
+                                                        checkOverlaps);
 
-  G4VPhysicalVolume* physLayer2 = new G4PVPlacement(0,   // no rotation
-                    G4ThreeVector(),  // at the origin
-                    logicLayer2,      // logical volume
-                    "Layer 2",        // name
-                    logicWorld,       // mother volume
-                    false,            // no boolean operation
-                    0,                // copy number
-                    checkOverlaps);   // overlaps checking
+  G4VPhysicalVolume* physAlCoating2 = new G4PVPlacement(0,
+                                                        G4ThreeVector(),
+                                                        logicAlCoating2,
+                                                        "AlCoating2",
+                                                        logicWorld,
+                                                        false,
+                                                        0,
+                                                        checkOverlaps);
+  // Place APD in the world volume
+  G4VPhysicalVolume* physAPD =
+    new G4PVPlacement(0,
+                      G4ThreeVector(0.0*mm, 0.0*mm, APDPlaceZ),
+                      logicAPD,
+                      "APD",
+                      logicWorld,
+                      false,
+                      0,
+                      checkOverlaps);
+  // Place Al APD case in the world volume.
+  G4VPhysicalVolume* physAlAPDCase =
+    new G4PVPlacement(0,
+                      G4ThreeVector(0.,0.,APDCasePlacementZ),
+                      logicAlAPDCase,
+                      "AlAPDCase",
+                      logicWorld,
+                      false,
+                      0,
+                      checkOverlaps);
 
-  // Now define the aluminum-layer1 boundary.
+  // Define the optical boundaries between physical volumes
+  // Define the aluminum-layer1 boundary.
   G4OpticalSurface* OpLayer1AlSurface = new G4OpticalSurface("Layer1AlSurface");
   OpLayer1AlSurface->SetModel(unified);
   OpLayer1AlSurface->SetType(surfaceType(layer1MatStr, layer2MatStr));
@@ -450,52 +658,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     G4LogicalBorderSurface("WorldAlSurface", physWorld, physLayer2,
                            OpWorldAlSurface);
 
-  // Define solids for APD
-  G4Box* solidAPD = new G4Box("APD",
-    casingX * 0.5, casingY * 0.5, casingZ * 0.5);
-  G4Box* solidEpoxy = new G4Box("Epoxy",
-    epoxyX * 0.5, epoxyY * 0.5, epoxyZ * 0.5);
-  G4Box* solidSilicon = new G4Box("SiDetector",
-    siliconXY * 0.5, siliconXY * 0.5, siliconZ * 0.5);
-  G4ThreeVector translEpoxy = G4ThreeVector(0.0*mm ,0.4*mm,
-    0.5 * (casingZ - epoxyZ));
-  G4ThreeVector translSilicon = G4ThreeVector(0.0*mm, 0.4*mm,
-    0.5 * (casingZ - siliconZ) - epoxyZ);
-  G4SubtractionSolid* solidCasingMid = new G4SubtractionSolid("CasingMid",
-    solidAPD, solidEpoxy, 0, translEpoxy);
-  G4SubtractionSolid* solidCasing = new G4SubtractionSolid("Casing",
-    solidCasingMid, solidSilicon, 0, translSilicon);
-
-  // Define materials for APD
-  G4Material* APDMat = nist->FindOrBuildMaterial("G4_AIR");
-  G4String casingMatStr = "G4_ALUMINUM_OXIDE";
-  G4Material* casingMat = nist->FindOrBuildMaterial(casingMatStr);
-  G4String epoxyMatStr = "Epoxy";
-  G4Material* epoxyMat = nist->FindOrBuildMaterial(epoxyMatStr);
-  epoxyMat->SetMaterialPropertiesTable(generateTable(epoxyMatStr));
-  G4String siliconMatStr = "G4_Si";
-  G4Material* siliconMat = nist->FindOrBuildMaterial(siliconMatStr);
-
-// Define logical volumes
-  G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
-                                                  APDMat,
-                                                  "APD");
-  G4LogicalVolume* logicCasing = new G4LogicalVolume(solidCasing,
-                                                     casingMat,
-                                                     "Casing");
-  G4LogicalVolume* logicEpoxy = new G4LogicalVolume(solidEpoxy,
-                                                    epoxyMat,
-                                                    "Epoxy");
-  G4LogicalVolume* logicSilicon = new G4LogicalVolume(solidSilicon,
-                                                      siliconMat,
-                                                      "Silicon");
-  
-  // Define a sensitive detector and assign it to epoxy.
-  singCrysSiliconSD* siliconSD = new singCrysSiliconSD("singCrys/siliconSD",
-    "SiliconHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(siliconSD);
-  logicEpoxy->SetSensitiveDetector(siliconSD);
-
   // Make skin surface on silicon with a certain efficiency.
   G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
   optSilicon->SetModel(glisur);
@@ -505,32 +667,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalSurface* skinSilicon = new G4LogicalSkinSurface("skinSilicon",
     logicSilicon, optSilicon);
 
-  // Place epoxy and silicon in casing.
-  G4double siliconPlaceZ = (0.5 * (casingZ - siliconZ) - epoxyZ);
-  G4VPhysicalVolume* physEpoxy = new G4PVPlacement(0,
-                    translEpoxy,
-                    logicEpoxy,
-                    "Epoxy",
-                    logicAPD,
-                    false,
-                    0,
-                    checkOverlaps);
-  G4VPhysicalVolume* physSilicon = new G4PVPlacement(0,
-                    translSilicon,
-                    logicSilicon,
-                    "Silicon",
-                    logicAPD,
-                    false,
-                    0,
-                    checkOverlaps);
-  G4VPhysicalVolume* physCasing = new G4PVPlacement(0,
-                    G4ThreeVector(),
-                    logicCasing,
-                    "Casing",
-                    logicAPD,
-                    false,
-                    0,
-                    checkOverlaps);
 
   // Make a surface surounding the casing with a certain relfectivity
   G4OpticalSurface* optCasing = new G4OpticalSurface("optCasing");
@@ -542,111 +678,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing",
     logicCasing, optCasing);
 
-  // Make aluminum casing for APD. It is made by making a G4Polyhedra with
-  // the same number of sides as the crystal. Then the translated cyrstal
-  // is subtracted in order to make a dent for the coatings and crystal.
-  // Another subtraction is done to make a place for the APD.
-  G4double APDAlCaseRadLen = layer2RadLen + APDAlCaseThick;
-  G4double APDAlCaseZPlaneCoords[2] = {-0.5 * APDAlCaseZ, 0.5 * APDAlCaseZ};
-  G4double APDAlCaseROuter[2] = {APDAlCaseRadLen, APDAlCaseRadLen};
-  G4ThreeVector translCrysAPDCase(0.0, 0.0,
-    0.5 * (crysSizeZ + APDAlCaseZ) - APDSlotDepth - AlCoating1Z - AlCoating2Z);
-  G4double casingPlaceZ = -(0.5 * APDAlCaseZ - 0.5 * casingZ - APDSlotDepth
-    - AlCoating1Z - AlCoating2Z);
-  G4Polyhedra* solidAlAPDCaseFull = new G4Polyhedra("AlAPDCaseFull",
-                                     rotation,
-                                     2*pi + rotation,
-                                     crysNumSides,
-                                     2,
-                                     APDAlCaseZPlaneCoords,
-                                     crysRInner,
-                                     APDAlCaseROuter);
-  G4SubtractionSolid* solidAlAPDCaseMid = new G4SubtractionSolid("AlAPDCaseMid",
-                                        solidAlAPDCaseFull, solidLayer2, 0,
-                                        translCrysAPDCase);
-  G4SubtractionSolid* solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
-                                      solidAlAPDCaseMid, solidAPD, 0,
-                                      G4ThreeVector(0.0, 0.0, -casingPlaceZ));
-  // Generate aluminum material
-  G4String APDAlCaseMatStr = "G4_Al";
-  G4Material* APDAlCaseMat = nist->FindOrBuildMaterial(APDAlCaseMatStr);
-  APDAlCaseMat->SetMaterialPropertiesTable(generateTable(APDAlCaseMatStr));
-  G4LogicalVolume* logicAlAPDCase = new G4LogicalVolume(solidAlAPDCase,
-                                                       APDAlCaseMat,
-                                                       "AlAPDCase");
-  // Make coatings for aluminum casing.
-  G4double AlCoating1ZPlaneCoords[2] = {-0.5 * crysSizeZ,
-    -(0.5 * crysSizeZ + AlCoating1Z)};
-  G4double AlCoating2ZPlaneCoords[2] = {-(0.5 * crysSizeZ + AlCoating1Z),
-    -(0.5 * crysSizeZ + AlCoating1Z + AlCoating2Z)};
-  G4Polyhedra* solidAlCoating1 = new G4Polyhedra("AlCoating1",
-                                                  rotation,
-                                                  2*pi + rotation,
-                                                  crysNumSides,
-                                                  2,
-                                                  AlCoating1ZPlaneCoords,
-                                                  crysRInner,
-                                                  layer2ROuter);
-  G4Polyhedra* solidAlCoating2 = new G4Polyhedra("AlCoating1",
-                                                  rotation,
-                                                  2*pi + rotation,
-                                                  crysNumSides,
-                                                  2,
-                                                  AlCoating2ZPlaneCoords,
-                                                  crysRInner,
-                                                  layer2ROuter);
-  G4String coating1MatStr = (G4String) config["coating1Mat"].as<std::string>();
-  G4String coating2MatStr = (G4String) config["coating2Mat"].as<std::string>();
-  G4Material* coating1Mat = nist->FindOrBuildMaterial(coating1MatStr);
-  G4Material* coating2Mat = nist->FindOrBuildMaterial(coating2MatStr);
-  coating1Mat->SetMaterialPropertiesTable(generateTable(coating1MatStr));
-  coating2Mat->SetMaterialPropertiesTable(generateTable(coating2MatStr));
-  G4LogicalVolume* logicAlCoating1 = new G4LogicalVolume(solidAlCoating1,
-                                                         coating1Mat,
-                                                         "AlCoating1");
-  G4LogicalVolume* logicAlCoating2 = new G4LogicalVolume(solidAlCoating2,
-                                                         coating2Mat,
-                                                         "AlCoating2");
-  G4VPhysicalVolume* physAlCoating1 = new G4PVPlacement(0,
-                                                       G4ThreeVector(),
-                                                       logicAlCoating1,
-                                                       "AlCoating1",
-                                                       logicWorld,
-                                                       false,
-                                                       0,
-                                                       checkOverlaps);
-
-  G4VPhysicalVolume* physAlCoating2 = new G4PVPlacement(0,
-                                                       G4ThreeVector(),
-                                                       logicAlCoating2,
-                                                       "AlCoating2",
-                                                       logicWorld,
-                                                       false,
-                                                       0,
-                                                       checkOverlaps);
-
-
-  // Place APD casing in the world volume
-  G4double APDPlaceZ = -(0.5 * (crysSizeZ + casingZ) +
-    AlCoating1Z + AlCoating2Z);
-  G4VPhysicalVolume* physAPD = new G4PVPlacement(0,
-                    G4ThreeVector(0.0*mm, 0.0*mm, APDPlaceZ),
-                    logicAPD,
-                    "APD",
-                    logicWorld,
-                    false,
-                    0,
-                    checkOverlaps);
-  G4double APDCasePlacement = -(0.5 * (crysSizeZ + APDAlCaseZ) - APDSlotDepth); 
-  G4VPhysicalVolume* physAlAPDCase = new G4PVPlacement(0,
-                                         G4ThreeVector(0.,0.,APDCasePlacement),
-                                         //G4ThreeVector(0., 0., 15.*cm),
-                                         logicAlAPDCase,
-                                         "AlAPDCase",
-                                         logicWorld,
-                                         false,
-                                         0,
-                                         checkOverlaps);
   // Now define the aluminum casing-coating2 boundary.
   G4OpticalSurface* OpCoat2APDCaseSurface = 
     new G4OpticalSurface("Coating2APDCaseSurface");
@@ -657,11 +688,12 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalBorderSurface* Coat2APDCaseSurface = new
   G4LogicalBorderSurface("Coating2APDCaseSurface", physAlCoating2,
     physAlAPDCase, OpCoat2APDCaseSurface);
+  
+  // Define a sensitive detector and assign it to epoxy.
+  singCrysSiliconSD* siliconSD = new singCrysSiliconSD("singCrys/siliconSD",
+    "SiliconHitsCollection");
+  G4SDManager::GetSDMpointer()->AddNewDetector(siliconSD);
+  logicEpoxy->SetSensitiveDetector(siliconSD);
 
-  // Set energy limits. If particle below energy limit, track is
-  // killed and energy is deposited.
-  fLimit = new G4UserLimits(DBL_MAX, DBL_MAX, DBL_MAX, 0.);
-  logicSilicon->SetUserLimits(fLimit);
- 
   return physWorld;
 }
