@@ -10,3 +10,6 @@ Makefile
 singleCrystal
 html
 latex
+*/singCrysPSNPhotons.*
+*/singCrysRun.*
+*/singCrysRunAction.*
