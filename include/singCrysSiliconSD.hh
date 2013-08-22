@@ -1,6 +1,7 @@
 /*!
  * \file singCrysSiliconSD.hh
- * \brief Header file for singCrysSiliconSD class. Defines a sensitive detector
+ * \brief Header file for the singCrysSiliconSD class. Defines a sensitive
+ * detector
  */
 
 #ifndef singCrysSiliconSD_h

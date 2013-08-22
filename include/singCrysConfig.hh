@@ -1,5 +1,7 @@
-/*! \file singCrysConfig.hh
- * \brief Header file for singCrysConfig class. Read and process configuration file.
+/*!
+ * \file singCrysConfig.hh
+ * \brief Header file for the singCrysConfig class. Read and process
+ * configuration file.
  */
 
 #ifndef singCrysConfig_h

@@ -1,3 +1,9 @@
+/*!
+ * \file singCrysSiliconSD.cc
+ * \brief Implementation file for the singCrysSiliconSD class. Defines a
+ * sensitive detector.
+ */
+
 #include "singCrysSiliconSD.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
@@ -38,6 +44,7 @@ G4bool singCrysSiliconSD::ProcessHits(G4Step* aStep,
   // energy deposit
   G4double edep = aStep->GetTotalEnergyDeposit();
   if (edep == 0.) return false;
+  // Define a new hit and pass it the appropriate values
   singCrysSiliconHit* newHit = new singCrysSiliconHit();
   newHit->SetTrackID (aStep->GetTrack()->GetTrackID());
   newHit->SetAPDNb(aStep->GetPreStepPoint()->GetTouchableHandle()

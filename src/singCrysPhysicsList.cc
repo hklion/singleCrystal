@@ -1,3 +1,9 @@
+/*!
+ * \file singCrysPhysicsList.cc
+ * \brief Implementation file for the singCrysPhysicsList class. Defines all
+ * necessary physics processes.
+ */
+
 #include "singCrysPhysicsList.hh"
 #include "G4ParticleTypes.hh"
 
@@ -21,6 +27,7 @@
 #include "singCrysConfig.hh"
 #include <boost/program_options.hpp>
 
+// Constructor
 singCrysPhysicsList::singCrysPhysicsList()
 {
   theCerenkovProcess = NULL;
@@ -35,6 +42,7 @@ singCrysPhysicsList::singCrysPhysicsList()
 
 }
 
+// Destructor
 singCrysPhysicsList::~singCrysPhysicsList()
 {; }
 

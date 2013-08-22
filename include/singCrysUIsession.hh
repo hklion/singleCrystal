@@ -1,7 +1,7 @@
 /*!
  * \file singCrysUIsession.hh
- * \brief Header file for singCrysUIsession class. Diverts G4cout and G4cerr 
- * to files.
+ * \brief Header file for the singCrysUIsession class. Diverts G4cout and
+ * G4cerr to files.
  */
 
 #ifndef singCrysUIsession_h

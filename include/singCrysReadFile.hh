@@ -1,6 +1,6 @@
 /*!
  * \file singCrysReadFile.hh
- * \brief Header file for singCrysReadFile class. Reads in data files.
+ * \brief Header file for the singCrysReadFile class. Reads in data files.
  */
 
 #ifndef singCrysReadFile_h

@@ -1,3 +1,9 @@
+/*!
+ * \file singCrysPrimaryGeneratorAction.cc
+ * \brief Implementation file for the singCrysPrimaryGeneratorAction class. 
+ * Generates a particle with specified parameters.
+ */
+
 #include "singCrysPrimaryGeneratorAction.hh"
 
 #include "G4LogicalVolumeStore.hh"

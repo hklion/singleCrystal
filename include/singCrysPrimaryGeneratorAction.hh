@@ -1,6 +1,6 @@
 /*!
  * \file singCrysPrimaryGeneratorAction.hh
- * \brief Header file for singCrysPrimaryGeneratorAction class. Generates a
+ * \brief Header file for the singCrysPrimaryGeneratorAction class. Generates a
  * particle with specified parameters.
  */
 

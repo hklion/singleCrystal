@@ -1,3 +1,9 @@
+/*!
+ * \file singCrysUIsession.cc
+ * \brief Implementation file for the singCrysUIsession class. Diverts G4cout
+ * and G4cerr to files.
+ */
+
 #include "singCrysUIsession.hh"
 #include "singCrysConfig.hh"
 #include <boost/program_options.hpp>
@@ -7,9 +13,11 @@ namespace po = boost::program_options;
 // Constructor. Open files.
 singCrysUIsession::singCrysUIsession() : G4UIsession()
 {
+  // Get file names from config file
   po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
   G4String logfileName = (G4String) config["logfileName"].as<std::string>();
   G4String errfileName = (G4String) config["errfileName"].as<std::string>();
+  // Open files
   logfile.open(logfileName);
   errfile.open(errfileName);
 }
@@ -17,6 +25,7 @@ singCrysUIsession::singCrysUIsession() : G4UIsession()
 // Destructor
 singCrysUIsession::~singCrysUIsession()
 {
+  // Close files
   logfile.close();
   errfile.close();
 }

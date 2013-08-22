@@ -1,6 +1,6 @@
 /*!
  * \file singCrysDetectorConstruction.hh
- * \brief Header file for singCrysDetectorConstruction class. Builds the
+ * \brief Header file for the singCrysDetectorConstruction class. Builds the
  * necessary geometry and materials.
  */
 

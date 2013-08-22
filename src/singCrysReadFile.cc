@@ -1,8 +1,15 @@
+/*!
+ * \file singCrysReadFile.cc
+ * \brief Implementation file for the singCrysReadFile class. Reads in data
+ * files.
+ */
+
 #include "singCrysReadFile.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include <fstream>
 
+// Constructor: reads in file and puts data in appropriate fields
 singCrysReadFile::singCrysReadFile(const G4String filename)
 {
   // Open file
@@ -30,6 +37,7 @@ singCrysReadFile::singCrysReadFile(const G4String filename)
   inf.close();
 }
 
+// Destructor: deletes dynamically allocated arrays
 singCrysReadFile::~singCrysReadFile()
 {
   delete[] energies;

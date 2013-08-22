@@ -1,3 +1,9 @@
+/*!
+ * \file singCrysSiliconHit.cc
+ * \brief Implementation file for the singCrysSiliconHit class. Defines an
+ * object for a sensitive detector hit.
+ */
+
 #include "singCrysSiliconHit.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
@@ -28,6 +34,7 @@ singCrysSiliconHit::~singCrysSiliconHit()
 singCrysSiliconHit::singCrysSiliconHit(const singCrysSiliconHit& right)
   : G4VHit()
 {
+  // Copy over fields
   fTrackID = right.fTrackID;
   fAPDNb = right.fAPDNb;
   fEdep = right.fEdep;
@@ -38,6 +45,7 @@ singCrysSiliconHit::singCrysSiliconHit(const singCrysSiliconHit& right)
 const singCrysSiliconHit& singCrysSiliconHit::
   operator=(const singCrysSiliconHit& right)
 {
+  // Copy fields and return the pointer to the new object
   fTrackID = right.fTrackID;
   fAPDNb = right.fAPDNb;
   fEdep = right.fEdep;
@@ -54,6 +62,7 @@ G4int singCrysSiliconHit::operator==(const singCrysSiliconHit& right) const
 // Draw hit
 void singCrysSiliconHit::Draw()
 {
+  // Only draw if the simulation is being visualized
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if (pVVisManager)
   {

@@ -1,6 +1,6 @@
 /*!
  * \file singCrysSiliconHit.hh
- * \brief Header file for singCrysSiliconHit class. Defines an object for a
+ * \brief Header file for the singCrysSiliconHit class. Defines an object for a
  * sensitive detector hit.
  */
 
@@ -36,6 +36,7 @@ class singCrysSiliconHit : public G4VHit
     //! Copy constructor
     /*!
      * All fields are copied
+     * \param right Object to be copied
      */
     singCrysSiliconHit(const singCrysSiliconHit& right);
     //! Destructor
@@ -45,11 +46,13 @@ class singCrysSiliconHit : public G4VHit
     //! Overload of the assignment operator
     /*!
      * All fields are copied
+     * \return Pointer to the new singCrysSiliconHit object
      */
     const singCrysSiliconHit& operator=(const singCrysSiliconHit& right);
     //! Overlaod of the equals operator
     /*!
      * Returns true iff the pointers of the objects are the same.
+     * \return Whether the pointers to the objects are the same.
      */
     G4int operator==(const singCrysSiliconHit& right) const;
 

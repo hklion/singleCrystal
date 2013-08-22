@@ -1,20 +1,27 @@
+/*!
+ * \file singCrysConfig.cc
+ * \brief Implementation file for the singCrysConfig class. Read and process
+ * configuration file
+ */
+
 #include "singCrysConfig.hh"
 #include <boost/program_options.hpp>
 #include <string>
 #include <fstream>
 #include <iostream>
-// Class implementation for the singCrysConfig class. This class reads and
-// stores the contents of a configuration file.
 
+// Initialize static members.
 G4bool singCrysConfig::constructed = false;
 G4String singCrysConfig::filename = "";
 
+// Constructor. Reads in the file and stores the config options in 'vm'.
 singCrysConfig::singCrysConfig()
 {
   // Open the config file, and read in its contents
   std::ifstream ini_file(filename); // Open stream
   po::options_description desc;     // Declare option description object
   desc.add_options()                // Add options
+    // Geometry options
     ("crysNumSides", po::value<G4int>()->default_value(4),
       "Number of sides of the crystal")
     ("crysSideLength", po::value<G4double>()->default_value(30.),
@@ -51,6 +58,7 @@ singCrysConfig::singCrysConfig()
       "Thickness of Al APD case (mm)")
     ("APDSlotDepth", po::value<G4double>()->default_value(5.),
       "How much of the crystal is in the Al case (mm)")
+    // Materials
     ("crysMat", po::value<std::string>()->default_value("LYSO"),
       "Crystal material")
     ("layer1Mat", po::value<std::string>()->default_value("G4_Galactic"),
@@ -62,8 +70,10 @@ singCrysConfig::singCrysConfig()
     ("coating1Mat", po::value<std::string>()->default_value("G4_Galactic"),
       "Material of the top Al APD case coating")
     ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
+    // Whether to check for volume overlaps
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
+    // Single-value physics parameters
     ("ceramicRefl", po::value<G4double>()->default_value(0.9),
       "Reflectance of ceramic")
     ("scintYield", po::value<G4double>()->default_value(26.),
@@ -76,6 +86,7 @@ singCrysConfig::singCrysConfig()
       "Time constant for slow component of scintillation (ns)")
     ("yieldRatio", po::value<G4double>()->default_value(1.),
       "Relative strength of fast component as fraction of total scint yeild")
+    // Data files
     ("dataPath", po::value<std::string>()->default_value(""),
       "Path to data files")
     ("crysRIndexFile", po::value<std::string>()
@@ -98,18 +109,21 @@ singCrysConfig::singCrysConfig()
       "File name for real component of aluminum refractive index")
     ("AlRIndexIFile", po::value<std::string>()->default_value("Al_RIndexI.dat"),
       "File name for imaginary component of aluminum refractive index")
+    // Options for singCrysPrimaryGeneratorAction
     ("n_particle", po::value<G4int>()->default_value(1),
       "Number of particles per event")
     ("particleName", po::value<std::string>()->default_value("e-"),
       "Type of particle")
     ("particleEnergy", po::value<G4double>()->default_value(105),
       "Energy of particle (MeV)")
+    // Options for singCrysUIsession
     ("logfileName",
       po::value<std::string>()->default_value("singleCrystal.log"),
       "Name of log file")
     ("errfileName",
       po::value<std::string>()->default_value("singleCrystal.err"),
       "Name of error file")
+    // Options for singCrysPhysicsList
     ("optVerbosity", po::value<G4int>()->default_value(0),
       "Verbosity for optical processes") 
     ;
@@ -129,13 +143,17 @@ singCrysConfig* singCrysConfig::GetInstance()
 // singleton class.
 singCrysConfig* singCrysConfig::LoadFile(G4String inFilename)
 {
+  // This function can only be called once, so if the class has already
+  // been constructed, throw an error.
   if (constructed)
   {
     G4cerr << "Warning. File " << inFilename << " will not be read. Another"
       << " file has already been read in.";
   }
+  // Update fields
   filename = inFilename;
   constructed = true;
+  // Return the instance of the class
   return GetInstance();
 }
 

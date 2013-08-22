@@ -1,24 +1,28 @@
+/*!
+ * \file singCrysDetectorConstruction.cc
+ * \brief Implementation file for the singCrysDetectorConstruction class.
+ * Builds the necessary geometry and materials.
+ */
+
 #include "singCrysDetectorConstruction.hh"
 
 #include "G4NistManager.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
+#include "G4SystemOfUnits.hh"
+
 #include "G4Box.hh"
 #include "G4Polyhedra.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
-#include "G4SystemOfUnits.hh"
+#include "G4SubtractionSolid.hh"
+
 #include "singCrysSiliconSD.hh"
-#include "G4UserLimits.hh"
-#include "G4MultiFunctionalDetector.hh"
-#include "G4VPrimitiveScorer.hh"
-#include "G4PSFlatSurfaceCurrent.hh"
-#include "G4PSEnergyDeposit.hh"
-#include "singCrysPSNPhotons.hh"
+
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
-#include "G4SubtractionSolid.hh"
+
 #include "singCrysConfig.hh"
 #include "singCrysReadFile.hh"
 #include <boost/program_options.hpp>

@@ -13,7 +13,6 @@
 #include "singCrysDetectorConstruction.hh"
 #include "singCrysPhysicsList.hh"
 #include "singCrysPrimaryGeneratorAction.hh"
-#include "singCrysRunAction.hh"
 #include "singCrysConfig.hh"
 
 #include "G4StepLimiterBuilder.hh"
