@@ -1,9 +1,7 @@
-//! Detector construction class
-
 /*!
- * Mandatory user detector construction class. Builds a LYSO crystal with a
- * simplified silicon APD on one end. Hits on silicon chip in APD are recorded
- * using a SensitiveDetector in the APD epoxy layer.
+ * \file singCrysDetectorConstruction.hh
+ * \brief Header file for singCrysDetectorConstruction class. Builds the
+ * necessary geometry and materials.
  */
 
 #ifndef singCrysDetectorConstruction_h
@@ -16,6 +14,15 @@
 
 class G4VPhysicalVolume;
 class G4UserLimits;
+
+/*!
+ * \class singCrysDetectorConstruction
+ * \brief Detector construction class
+
+ * Mandatory user detector construction class. Builds a LYSO crystal with a
+ * simplified silicon APD on one end. Hits on silicon chip in APD are recorded
+ * using a SensitiveDetector in the APD epoxy layer.
+ */
 
 class singCrysDetectorConstruction : public G4VUserDetectorConstruction
 {
@@ -101,7 +108,7 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
      * If one of the materials is silicon, aluminum, or ceramic, the surface
      * is dielectric_metal. Otherwise, it is dielectric_dielectric.
      * \param material1 The material string for the first volume on the border
-     * \param materail2 The material string for the second volume on the border
+     * \param material2 The material string for the second volume on the border
      * \return The G4SurfaceType appropriate for the surface
      */
     G4SurfaceType surfaceType(G4String material1, G4String material2);

@@ -1,4 +1,7 @@
-// Selection of the analysis technology
+/*!
+ * \file singCrysAnalysis.hh
+ * \brief Selection of the analysis technology
+ */
 
 #ifndef B4Analysis_h
 #define B4Analysis_h 1
