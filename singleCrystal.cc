@@ -1,3 +1,8 @@
+/*!
+ * \file singleCrystal.cc
+ * \brief Main file in the singleCrystal simulation
+ */
+
 #include "G4UImanager.hh"
 #include "G4RunManager.hh"
 #include "singCrysUIsession.hh"
@@ -24,21 +29,31 @@
 
 namespace po = boost::program_options;
 
+//! Main function in the singleCrystal simulation
+/*!
+ * Handles command-line arguments, loads configuration file options, passes
+ * mandatory and optional user-defined classes to the G4RunManager, and
+ * initializes the simulation and visualization, if not in batch mode.
+ */
 int main(int argc, char** argv)
 {
-
+  // Define options for command-line arguments.
   po::options_description desc;
   desc.add_options()
     ("config,c", po::value<std::string>()->default_value("config.ini"),
       "configuration fle")
     ("script", po::value<std::string>()->default_value(""),
       "script to run in batch mode");
+  // Make the 'script' option be positional. There should be at most one
+  // script argument.
   po::positional_options_description pos_options;
   pos_options.add("script", 1);
+  // Store variables in the map
   po::variables_map vm;
   po::store(po::command_line_parser(argc, argv).options(desc).
     positional(pos_options).run(), vm);
   po::notify(vm);
+  // Load configuration file
   singCrysConfig::LoadFile((G4String) vm["config"].as<std::string>());
 
   // Choose the random engine
