@@ -40,10 +40,10 @@ int main(int argc, char** argv)
   // Define options for command-line arguments.
   po::options_description desc;
   desc.add_options()
+    ("help", "produce help message")
     ("config,c", po::value<std::string>()->default_value("config.ini"),
       "configuration fle")
-    ("script", po::value<std::string>()->default_value(""),
-      "script to run in batch mode");
+    ("script", po::value<std::string>(), "script to run in batch mode");
   // Make the 'script' option be positional. There should be at most one
   // script argument.
   po::positional_options_description pos_options;
@@ -53,6 +53,12 @@ int main(int argc, char** argv)
   po::store(po::command_line_parser(argc, argv).options(desc).
     positional(pos_options).run(), vm);
   po::notify(vm);
+  // If help was requested, print options and terminate.
+  if (vm.count("help"))
+  {
+    G4cout << desc << G4endl;
+    return 1;
+  }
   // Load configuration file
   singCrysConfig::LoadFile((G4String) vm["config"].as<std::string>());
 
@@ -88,8 +94,8 @@ int main(int argc, char** argv)
   singCrysUIsession* loggedSession = new singCrysUIsession;
   UImanager->SetCoutDestination(loggedSession);
  
-  // If 'script' is not the empty string, batch mode
-  if (std::strcmp((G4String)vm["script"].as<std::string>(), "") != 0)
+  // If a script option was passed in, batch mode
+  if (vm.count("script"))
   {
     G4String command = "/control/execute ";
 
