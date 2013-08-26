@@ -32,6 +32,10 @@ singCrysDetectorConstruction::singCrysDetectorConstruction()
 : G4VUserDetectorConstruction()
 { 
   DefineMaterials();
+  // Define new sensitive detector
+  siliconSD = new singCrysSiliconSD("singCrys/siliconSD",
+    "SiliconHitsCollection");
+  G4SDManager::GetSDMpointer()->AddNewDetector(siliconSD);
 }
 
 // Destructor: nothing to delete
@@ -692,11 +696,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalBorderSurface* Coat2APDCaseSurface = new
   G4LogicalBorderSurface("Coating2APDCaseSurface", physAlCoating2,
     physAlAPDCase, OpCoat2APDCaseSurface);
-  
-  // Define a sensitive detector and assign it to epoxy.
-  singCrysSiliconSD* siliconSD = new singCrysSiliconSD("singCrys/siliconSD",
-    "SiliconHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(siliconSD);
+ 
+  // Assign the sensitive detector to epoxy 
   logicEpoxy->SetSensitiveDetector(siliconSD);
 
   return physWorld;

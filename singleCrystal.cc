@@ -1,3 +1,4 @@
+
 /*!
  * \file singleCrystal.cc
  * \brief Main file in the singleCrystal simulation
@@ -19,6 +20,7 @@
 #include "singCrysPhysicsList.hh"
 #include "singCrysPrimaryGeneratorAction.hh"
 #include "singCrysConfig.hh"
+#include "singCrysEventAction.hh"
 
 #include "G4StepLimiterBuilder.hh"
 #include "G4VModularPhysicsList.hh"
@@ -77,8 +79,8 @@ int main(int argc, char** argv)
   // Add manatory user action class
   runManager->SetUserAction(new singCrysPrimaryGeneratorAction());
 
-  // Add optional run action class
-//  runManager->SetUserAction(new singCrysRunAction());
+  // Add optional event action class
+  runManager->SetUserAction(new singCrysEventAction());
 
   // Initialize kernel
   runManager->Initialize();

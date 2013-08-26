@@ -17,7 +17,8 @@ singCrysSiliconSD::singCrysSiliconSD(const G4String& name,
   : G4VSensitiveDetector(name),
     fHitsCollection(NULL)
 {
-  collectionName.insert(hitsCollectionName);
+  G4String HCname;
+  collectionName.insert(HCname="SiliconHitsCollection");
 }
 
 // Destructor

@@ -14,6 +14,7 @@
 
 class G4VPhysicalVolume;
 class G4UserLimits;
+class singCrysSiliconSD;
 
 /*!
  * \class singCrysDetectorConstruction
@@ -112,6 +113,7 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
      * \return The G4SurfaceType appropriate for the surface
      */
     G4SurfaceType surfaceType(G4String material1, G4String material2);
+    singCrysSiliconSD* siliconSD;
 };
 
 #endif
