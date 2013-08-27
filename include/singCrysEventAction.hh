@@ -56,24 +56,9 @@ class singCrysEventAction : public G4UserEventAction
     G4int fSiHCID;
     G4int fVerboseLevel;
 
-
-
-
-
-
 #ifdef G4ANALYSIS_USE
-    //IHistogram1D* fDc1Hits;
-    //IHistogram1D* fDc2Hits;
-    //ICloud2D* fDc1XY;
-    //ICloud2D* fDc2XY;
-    //ICloud2D* fEvstof;
     ITuple* fTuple;
-    //IPlotter* fPlotter;
 #endif // G4ANALYSIS_USE
-
-
-
-
 
   public:
     inline void SetVerbose(G4int val) { fVerboseLevel = val; }

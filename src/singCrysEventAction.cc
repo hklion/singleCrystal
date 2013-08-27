@@ -57,50 +57,18 @@ singCrysEventAction::singCrysEventAction()
   fVerboseLevel = 1;
 
 #ifdef G4ANALYSIS_USE
-  //fPlotter = 0;
   fTuple = 0;
-  //fDc1Hits = fDc2Hits = 0;
-  //fDc1XY = fDc2XY = fEvstof = 0;
-
   // Do some analysis
 
-  singCrysAnalysisManager* analysisManager = singCrysAnalysisManager::getInstance();
-  IHistogramFactory* hFactory = analysisManager->getHistogramFactory();
-
-//  if (hFactory)
-//  {
-    // Create some histograms
-    //fDc1Hits = hFactory->createHistogram1D("Drift Chamber 1 # Hits",50,0,50);
-    //fDc2Hits = hFactory->createHistogram1D("Drift Chamber 2 # Hits",50,0,50);
-
-    // Create some clouds (Scatter Plots)
-    //fDc1XY = hFactory->createCloud2D("Drift Chamber 1 X vs Y");
-    //fDc2XY = hFactory->createCloud2D("Drift Chamber 2 X vs Y");
-    //fEvstof = hFactory->createCloud2D("EDep vs Time-of-flight");
-
-    //fPlotter = analysisManager->getPlotter();
-    //if (fPlotter)
-    //{
-      // fPlotter->createRegions(3,2);
-      // fPlotter->region(0)->plot(*fDc1Hits);
-      // fPlotter->region(1)->plot(*fDc2Hits);
-      // fPlotter->region(2)->plot(*fDc1XY);
-      // fPlotter->region(3)->plot(*fDc2XY);
-      // fPlotter->region(4)->plot(*fEvstof);
-      // fPlotter->show();
-    // }
-//  }
+  singCrysAnalysisManager* analysisManager =
+      singCrysAnalysisManager::getInstance();
 
   // Create a Tuple
-
-
-
-
   ITupleFactory* tFactory = analysisManager->getTupleFactory();
   if (tFactory)
   {
-     //fTuple = tFactory->create("MyTuple","MyTuple","int fDc1Hits, fDc2Hits, double ECEnergy, HCEnergy, time1, time2","");
-     fTuple = tFactory->create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy","");
+    fTuple = tFactory->
+    create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy","");
   }
 #endif // G4ANALYSIS_USE
 }
@@ -129,80 +97,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
   }
 
 #ifdef G4ANALYSIS_USE
-  // Fill some histograms
-
-/*  if (fDHC1 && fDc1Hits)
-  {
-    int n_hit = fDHC1->entries();
-    fDc1Hits->fill(n_hit);
-    for(int i1=0;i1<n_hit;i1++)
-    {
-      singCrysDriftChamberHit* aHit = (*fDHC1)[i1];
-      G4ThreeVector localPos = aHit->GetLocalPos();
-      if (fDc1XY) fDc1XY->fill(localPos.y(), localPos.x());
-    }
-  }
-  if (fDHC2 && fDc2Hits)
-  {
-    int n_hit = fDHC2->entries();
-    fDc2Hits->fill(n_hit);
-    for(int i1=0;i1<n_hit;i1++)
-    {
-      singCrysDriftChamberHit* aHit = (*fDHC2)[i1];
-      G4ThreeVector localPos = aHit->GetLocalPos();
-      if (fDc2XY) fDc2XY->fill(localPos.y(), localPos.x());
-    }
-  }*/
-
   // Fill the tuple
-
-/*  if (fTuple)
-  {
-    if (fDHC1) fTuple->fill(0,fDHC1->entries());
-    if (fDHC2) fTuple->fill(1,fDHC2->entries());
-    if(ECHC)
-    {
-      int iHit = 0;
-      double totalE = 0.;
-      for(int i1=0;i1<80;i1++)
-      {
-        singCrysEmCalorimeterHit* aHit = (*ECHC)[i1];
-        double eDep = aHit->GetEdep();
-        if(eDep>0.)
-        {
-          iHit++;
-          totalE += eDep;
-        }
-      }
-      fTuple->fill(2,totalE);
-
-          if (fHHC1 && fHHC2 && fHHC1->entries()==1 && fHHC2->entries()==1)
-          {
-             double tof = (*fHHC2)[0]->GetTime() - (*fHHC1)[0]->GetTime();
-                 if (fEvstof) fEvstof->fill(tof,totalE);
-          }
-    }
-    if(HCHC)
-    {
-      int iHit = 0;
-      double totalE = 0.;
-      for(int i1=0;i1<20;i1++)
-      {
-        singCrysHadCalorimeterHit* aHit = (*HCHC)[i1];
-        double eDep = aHit->GetEdep();
-        if(eDep>0.)
-        {
-          iHit++;
-          totalE += eDep;
-        }
-      }
-      fTuple->fill(3,totalE);
-    }
-    if (fHHC1 && fHHC1->entries()==1) fTuple->fill(4,(*fHHC1)[0]->GetTime());
-    if (fHHC2 && fHHC2->entries()==1) fTuple->fill(5,(*fHHC2)[0]->GetTime());
-        fTuple->addRow();
-  }
-*/  
 
   // Make sure there aren't going to be any issues with NULL pointers
   if (fTuple)
@@ -230,12 +125,6 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
       }
     }
   }
-
   
-  
-  //if (fPlotter) fPlotter->refresh();
 #endif // G4ANALYSIS_USE
-
-
-
 }
