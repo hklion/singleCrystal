@@ -30,12 +30,18 @@ if (AIDA_FOUND)
 endif()
 
 #----------------------------------------------------------------------------
+# Find ROOT
+#
+find_package(ROOT)
+
+#----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR}
-                    ${AIDA_INCLUDE_DIR})
+                    ${AIDA_INCLUDE_DIR}
+                    ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
@@ -44,7 +50,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(singleCrystal singleCrystal.cc ${sources} ${headers})
 target_link_libraries(singleCrystal ${Geant4_LIBRARIES} ${AIDA_LIBRARIES}
--lboost_program_options)
+    ${ROOT_LIBRARIES} -lboost_program_options)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
