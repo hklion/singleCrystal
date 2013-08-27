@@ -223,7 +223,8 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
           fTuple->fill(0, evtID);
           fTuple->fill(1, hitID);
           fTuple->fill(2, eDep);
-          G4cout << evtID << " " << hitID << " " << edep << G4endl;
+          G4cout << evtID << " " << hitID << " " << eDep << G4endl;
+          fTuple->addRow();
           hitID++;
         }
       }
