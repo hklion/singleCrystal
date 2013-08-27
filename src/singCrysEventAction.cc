@@ -59,7 +59,7 @@ singCrysEventAction::singCrysEventAction()
 #ifdef G4ANALYSIS_USE
   //fPlotter = 0;
   fTuple = 0;
-  fDc1Hits = fDc2Hits = 0;
+  //fDc1Hits = fDc2Hits = 0;
   //fDc1XY = fDc2XY = fEvstof = 0;
 
   // Do some analysis
@@ -68,7 +68,7 @@ singCrysEventAction::singCrysEventAction()
   IHistogramFactory* hFactory = analysisManager->getHistogramFactory();
 
 //  if (hFactory)
-  {
+//  {
     // Create some histograms
     //fDc1Hits = hFactory->createHistogram1D("Drift Chamber 1 # Hits",50,0,50);
     //fDc2Hits = hFactory->createHistogram1D("Drift Chamber 2 # Hits",50,0,50);
@@ -207,11 +207,11 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
   // Make sure there aren't going to be any issues with NULL pointers
   if (fTuple)
   {
-    if (fSiHCID)
+    if (SiHC)
     {
       G4int hitID = 0;
       // Get the number of hits
-      G4int nHits = fSiHCID->entries();
+      G4int nHits = SiHC->entries();
       // Loop through all of the hits.
       for (G4int i = 0; i < nHits; i++)
       {
@@ -223,6 +223,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
           fTuple->fill(0, evtID);
           fTuple->fill(1, hitID);
           fTuple->fill(2, eDep);
+          G4cout << evtID << " " << hitID << " " << edep << G4endl;
           hitID++;
         }
       }

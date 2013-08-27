@@ -32,14 +32,15 @@
 #include "globals.hh"
 #include <vector>
 #include "G4ThreeVector.hh"
+#include <AIDA/AIDA.h>
 
-using namespace AIDA;
-
-class AIDA::IAnalysisFactory;
-class AIDA::ITree;
-class AIDA::IHistogramFactory;
-class AIDA::ITupleFactory;
-class AIDA::IPlotter;
+namespace AIDA{
+class IAnalysisFactory;
+class ITree;
+class IHistogramFactory;
+class ITupleFactory;
+class IPlotter;
+}
 
 class G4Track;
 
@@ -50,19 +51,19 @@ public:
   static singCrysAnalysisManager* getInstance();
   static void dispose();
 
-  IHistogramFactory* getHistogramFactory();
-  ITupleFactory* getTupleFactory();
-  IPlotter* getPlotter();
+  AIDA::IHistogramFactory* getHistogramFactory();
+  AIDA::ITupleFactory* getTupleFactory();
+  AIDA::IPlotter* getPlotter();
 
 private:
   singCrysAnalysisManager();
   static singCrysAnalysisManager* fInstance;
 
-  IAnalysisFactory* fAnalysisFactory;
-  IHistogramFactory* fFactory;
-  ITupleFactory* tFactory;
-  IPlotter* fPlotter;
-  ITree* fTree;
+  AIDA::IAnalysisFactory* fAnalysisFactory;
+  AIDA::IHistogramFactory* fFactory;
+  AIDA::ITupleFactory* tFactory;
+  AIDA::IPlotter* fPlotter;
+  AIDA::ITree* fTree;
 };
 
 #endif

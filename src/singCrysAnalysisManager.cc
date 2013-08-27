@@ -51,11 +51,11 @@ singCrysAnalysisManager::singCrysAnalysisManager()
   fAnalysisFactory = AIDA_createAnalysisFactory();
   if(fAnalysisFactory)
   {
-    ITreeFactory* treeFactory = fAnalysisFactory->createTreeFactory();
-    fTree = treeFactory->create("singCrys.root","root",false,true,"compress=yes");
+    AIDA::ITreeFactory* treeFactory = fAnalysisFactory->createTreeFactory();
+    fTree = treeFactory->create("singCrys.root","root",false,true,"compress=no");
     fFactory = fAnalysisFactory->createHistogramFactory(*fTree);
     tFactory = fAnalysisFactory->createTupleFactory(*fTree);
-    IPlotterFactory* pf = fAnalysisFactory->createPlotterFactory(0,0);
+    AIDA::IPlotterFactory* pf = fAnalysisFactory->createPlotterFactory(0,0);
     if (pf) {
       fPlotter = pf->create("Plotter");
       delete pf;
@@ -78,15 +78,15 @@ singCrysAnalysisManager::~singCrysAnalysisManager()
     delete fAnalysisFactory;
   }
 }
-IHistogramFactory* singCrysAnalysisManager::getHistogramFactory()
+AIDA::IHistogramFactory* singCrysAnalysisManager::getHistogramFactory()
 {
   return fFactory;
 }
-ITupleFactory* singCrysAnalysisManager::getTupleFactory()
+AIDA::ITupleFactory* singCrysAnalysisManager::getTupleFactory()
 {
   return tFactory;
 }
-IPlotter* singCrysAnalysisManager::getPlotter()
+AIDA::IPlotter* singCrysAnalysisManager::getPlotter()
 {
   return fPlotter;
 }
