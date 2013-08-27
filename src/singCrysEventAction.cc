@@ -71,6 +71,12 @@ singCrysEventAction::singCrysEventAction()
     create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy","");
   }
 #endif // G4ANALYSIS_USE
+  // ROOT
+  myFile = new TFile("output.root", "recreate");
+  myTree = new TTree("ntp1", "Tree with vectors");
+  myTree->Branch("eventID", &eventID);
+  myTree->Branch("energy", &energy);
+  // ROOT
 }
 
 singCrysEventAction::~singCrysEventAction()
@@ -78,6 +84,11 @@ singCrysEventAction::~singCrysEventAction()
 #ifdef G4ANALYSIS_USE
   singCrysAnalysisManager::dispose();
 #endif // G4ANALYSIS_USE
+  // ROOT
+  myFile->Write();
+  myFile->Close();
+  delete myFile;
+  // ROOT
 }
 
 void singCrysEventAction::BeginOfEventAction(const G4Event*)
@@ -96,6 +107,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
     SiHC = (singCrysSiliconHitsCollection*)(HCE->GetHC(fSiHCID));
   }
 
+  G4int nHits; // Number of hits
 #ifdef G4ANALYSIS_USE
   // Fill the tuple
 
@@ -106,7 +118,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
     {
       G4int hitID = 0;
       // Get the number of hits
-      G4int nHits = SiHC->entries();
+      nHits = SiHC->entries();
       // Loop through all of the hits.
       for (G4int i = 0; i < nHits; i++)
       {
@@ -125,6 +137,27 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
       }
     }
   }
-  
 #endif // G4ANALYSIS_USE
+  
+  // ROOT
+  energy.clear();
+  eventID = evtID;
+  if (SiHC)
+  {
+    // Get the number of hits
+    nHits = SiHC->entries();
+    // Loop through all of the hits.
+    for (G4int i = 0; i < nHits; i++)
+    {
+      singCrysSiliconHit* hit = (*SiHC)[i];
+      G4double eDep = hit->GetEdep();
+      if (eDep > 0.)
+      {
+        energy.push_back(eDep);
+      }
+    }
+    myTree->Fill();
+  }
+  //ROOT
+
 }

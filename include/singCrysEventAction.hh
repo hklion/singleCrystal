@@ -36,6 +36,12 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 
+// ROOT
+#include "TH2.h"
+#include "TFile.h"
+#include "TTree.h"
+// ROOT
+
 #ifdef G4ANALYSIS_USE
 #include "AIDA/AIDA.h"
 using namespace AIDA;
@@ -55,6 +61,13 @@ class singCrysEventAction : public G4UserEventAction
   private:
     G4int fSiHCID;
     G4int fVerboseLevel;
+    
+    // ROOT
+    TFile *myFile;
+    TTree *myTree;
+    int eventID;
+    std::vector<double> energy;
+    // ROOT
 
 #ifdef G4ANALYSIS_USE
     ITuple* fTuple;
