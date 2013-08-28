@@ -26,13 +26,16 @@ include(${Geant4_USE_FILE})
 #
 find_package(AIDA)
 if (AIDA_FOUND)
-  add_definitions(-DG4ANALYSIS_USE)
+  add_definitions(-DAIDA_USE)
 endif()
 
 #----------------------------------------------------------------------------
 # Find ROOT
 #
 find_package(ROOT)
+if (ROOT_FOUND)
+  add_definitions(-DROOT_USE)
+endif()
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project

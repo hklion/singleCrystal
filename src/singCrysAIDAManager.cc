@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/singCrys/src/singCrysAnalysisManager.cc
-/// \brief Implementation of the singCrysAnalysisManager class
+/// \file analysis/singCrys/src/singCrysAIDAManager.cc
+/// \brief Implementation of the singCrysAIDAManager class
 
-#ifdef G4ANALYSIS_USE
+#ifdef AIDA_USE
 
 #include <fstream>
 
@@ -40,11 +40,11 @@
 
 #include <AIDA/AIDA.h>
 
-#include "singCrysAnalysisManager.hh"
+#include "singCrysAIDAManager.hh"
 
-singCrysAnalysisManager* singCrysAnalysisManager::fInstance = 0;
+singCrysAIDAManager* singCrysAIDAManager::fInstance = 0;
 
-singCrysAnalysisManager::singCrysAnalysisManager()
+singCrysAIDAManager::singCrysAIDAManager()
 :fAnalysisFactory(0), fFactory(0), tFactory(0), fPlotter(0)
 {
   // Hooking an AIDA compliant analysis system.
@@ -64,7 +64,7 @@ singCrysAnalysisManager::singCrysAnalysisManager()
   }
 }
 
-singCrysAnalysisManager::~singCrysAnalysisManager()
+singCrysAIDAManager::~singCrysAIDAManager()
 {
   if (fAnalysisFactory)
   {
@@ -78,26 +78,26 @@ singCrysAnalysisManager::~singCrysAnalysisManager()
     delete fAnalysisFactory;
   }
 }
-AIDA::IHistogramFactory* singCrysAnalysisManager::getHistogramFactory()
+AIDA::IHistogramFactory* singCrysAIDAManager::getHistogramFactory()
 {
   return fFactory;
 }
-AIDA::ITupleFactory* singCrysAnalysisManager::getTupleFactory()
+AIDA::ITupleFactory* singCrysAIDAManager::getTupleFactory()
 {
   return tFactory;
 }
-AIDA::IPlotter* singCrysAnalysisManager::getPlotter()
+AIDA::IPlotter* singCrysAIDAManager::getPlotter()
 {
   return fPlotter;
 }
 
-singCrysAnalysisManager* singCrysAnalysisManager::getInstance()
+singCrysAIDAManager* singCrysAIDAManager::getInstance()
 {
-  if (fInstance == 0) fInstance = new singCrysAnalysisManager();
+  if (fInstance == 0) fInstance = new singCrysAIDAManager();
   return fInstance;
 }
 
-void singCrysAnalysisManager::dispose()
+void singCrysAIDAManager::dispose()
 {
   if (fInstance != 0)
   {
@@ -106,5 +106,5 @@ void singCrysAnalysisManager::dispose()
   }
 }
 
-#endif // G4ANALYSIS_USE
+#endif // AIDA_USE
 

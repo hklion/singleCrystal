@@ -31,9 +31,9 @@
 //
 
 #include "singCrysEventAction.hh"
-#ifdef G4ANALYSIS_USE
-#include "singCrysAnalysisManager.hh"
-#endif // G4ANALYSIS_USE
+#ifdef AIDA_USE
+#include "singCrysAIDAManager.hh"
+#endif // AIDA_USE
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
@@ -56,12 +56,12 @@ singCrysEventAction::singCrysEventAction()
   fSiHCID = SDman->GetCollectionID(HCname="SiliconHitsCollection");
   fVerboseLevel = 1;
 
-#ifdef G4ANALYSIS_USE
+  #ifdef AIDA_USE
   fTuple = 0;
   // Do some analysis
 
-  singCrysAnalysisManager* analysisManager =
-      singCrysAnalysisManager::getInstance();
+  singCrysAIDAManager* analysisManager =
+      singCrysAIDAManager::getInstance();
 
   // Create a Tuple
   ITupleFactory* tFactory = analysisManager->getTupleFactory();
@@ -70,25 +70,27 @@ singCrysEventAction::singCrysEventAction()
     fTuple = tFactory->
     create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy","");
   }
-#endif // G4ANALYSIS_USE
-  // ROOT
+  #endif // AIDA_USE
+
+  #ifdef ROOT_USE
   myFile = new TFile("output.root", "recreate");
   myTree = new TTree("ntp1", "Tree with vectors");
   myTree->Branch("eventID", &eventID);
   myTree->Branch("energy", &energy);
-  // ROOT
+  #endif // ROOT_USE
 }
 
 singCrysEventAction::~singCrysEventAction()
 {
-#ifdef G4ANALYSIS_USE
-  singCrysAnalysisManager::dispose();
-#endif // G4ANALYSIS_USE
-  // ROOT
+  #ifdef AIDA_USE
+  singCrysAIDAManager::dispose();
+  #endif // AIDA_USE
+  
+  #ifdef ROOT_USE
   myFile->Write();
   myFile->Close();
   delete myFile;
-  // ROOT
+  #endif
 }
 
 void singCrysEventAction::BeginOfEventAction(const G4Event*)
@@ -108,7 +110,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
   }
 
   G4int nHits; // Number of hits
-#ifdef G4ANALYSIS_USE
+  #ifdef AIDA_USE
   // Fill the tuple
 
   // Make sure there aren't going to be any issues with NULL pointers
@@ -137,9 +139,9 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
       }
     }
   }
-#endif // G4ANALYSIS_USE
+  #endif // AIDA_USE
   
-  // ROOT
+  #ifdef ROOT_USE
   energy.clear();
   eventID = evtID;
   if (SiHC)
@@ -158,6 +160,6 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
     }
     myTree->Fill();
   }
-  //ROOT
+  #endif // ROOT_USE
 
 }

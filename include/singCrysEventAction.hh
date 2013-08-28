@@ -36,16 +36,16 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 
-// ROOT
+#ifdef ROOT_USE
 #include "TH2.h"
 #include "TFile.h"
 #include "TTree.h"
-// ROOT
+#endif // ROOT_USE
 
-#ifdef G4ANALYSIS_USE
+#ifdef AIDA_USE
 #include "AIDA/AIDA.h"
 using namespace AIDA;
-#endif // G4ANALYSIS_USE
+#endif // AIDA_USE
 
 class singCrysEventActionMessenger;
 
@@ -62,16 +62,16 @@ class singCrysEventAction : public G4UserEventAction
     G4int fSiHCID;
     G4int fVerboseLevel;
     
-    // ROOT
+    #ifdef ROOT_USE
     TFile *myFile;
     TTree *myTree;
     int eventID;
     std::vector<double> energy;
-    // ROOT
+    #endif // ROOT_USE
 
-#ifdef G4ANALYSIS_USE
+    #ifdef AIDA_USE
     ITuple* fTuple;
-#endif // G4ANALYSIS_USE
+    #endif // AIDA_USE
 
   public:
     inline void SetVerbose(G4int val) { fVerboseLevel = val; }

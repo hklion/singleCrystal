@@ -23,11 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file singCrysAnalysisManager.hh
-/// \brief Definition of the singCrysAnalysisManager class
+/// \file singCrysAIDAManager.hh
+/// \brief Definition of the singCrysAIDAManager class
 
-#ifndef singCrysAnalysisManager_h
-#define singCrysAnalysisManager_h 1
+#ifndef singCrysAIDAManager_h
+#define singCrysAIDAManager_h 1
 
 #include "globals.hh"
 #include <vector>
@@ -44,11 +44,11 @@ class IPlotter;
 
 class G4Track;
 
-class singCrysAnalysisManager {
+class singCrysAIDAManager {
 public:
 
-  virtual ~singCrysAnalysisManager();
-  static singCrysAnalysisManager* getInstance();
+  virtual ~singCrysAIDAManager();
+  static singCrysAIDAManager* getInstance();
   static void dispose();
 
   AIDA::IHistogramFactory* getHistogramFactory();
@@ -56,8 +56,8 @@ public:
   AIDA::IPlotter* getPlotter();
 
 private:
-  singCrysAnalysisManager();
-  static singCrysAnalysisManager* fInstance;
+  singCrysAIDAManager();
+  static singCrysAIDAManager* fInstance;
 
   AIDA::IAnalysisFactory* fAnalysisFactory;
   AIDA::IHistogramFactory* fFactory;
