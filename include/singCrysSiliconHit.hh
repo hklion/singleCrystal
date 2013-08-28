@@ -65,7 +65,7 @@ class singCrysSiliconHit : public G4VHit
     //! Draws hits in visualization
     virtual void Draw();
     //! Prints hits
-    /*
+    /*!
      * Prints track ID, which APD the hit occurred in, the position, and
      * the energy.
      */

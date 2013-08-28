@@ -1,30 +1,8 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file singCrysAIDAManager.hh
-/// \brief Definition of the singCrysAIDAManager class
+/*!
+ * \file singCrysAIDAManager.hh
+ * \brief Header file for the singCrysAIDAManager class. Manages the AIDA-based
+ * analysis.
+ */
 
 #ifndef singCrysAIDAManager_h
 #define singCrysAIDAManager_h 1
@@ -44,25 +22,75 @@ class IPlotter;
 
 class G4Track;
 
+/*!
+ * \class singCrysAIDAManager
+ * \brief AIDA manager class
+ *
+ * Singleton class that manages the objects used for AIDA-based analysis.
+ * Handles the output to a .root file, as well as the various types of
+ * objects and factories used. This class is only used if cmake was able to
+ * find the AIDA libraries when it was last run. Otherwise, AIDA will not be
+ * used, and all lines concerning its implementation will be excluded using
+ * a preprocessor directive.
+ */
 class singCrysAIDAManager {
 public:
-
+  //! Destructor
+  /*!
+   * Attempts to write data to an AIDA file. Deletes all dynamically allocated
+   * members.
+   */
   virtual ~singCrysAIDAManager();
+  //! Returns a pointer to the instance of the class
+  /*!
+   * If an instance of the class has not already been created, create one. In
+   * either case, return the pointer to the class.
+   * \return A pointer to the instance of the class.
+   */
   static singCrysAIDAManager* getInstance();
+  //! Destroys the instance of the class
+  /*!
+   * To be called from outside of the class. Deletes the instance of the class
+   * if one has been created.
+   */
   static void dispose();
-
+  //! Accessor method for the histogram factory.
+  /*!
+   * Returns the pointer to the histogram factory used
+   * \return A pointer to the histogram factory
+   */
   AIDA::IHistogramFactory* getHistogramFactory();
+  //! Accessor method for the tuple factory.
+  /*!
+   * Returns the pointer to the tuple factory used
+   * \return A pointer to the tuple factory
+   */
   AIDA::ITupleFactory* getTupleFactory();
+  //! Accessor method for the plotter
+  /*!
+   * Returns the pointer to the plotter used
+   * \return A pointer to the plotter
+   */
   AIDA::IPlotter* getPlotter();
 
 private:
+  //! Constructor
+  /*!
+   * Hooks an AIDA compliant analysis system and creates the approprite
+   * factories and plotters to do the analysis.
+   */
   singCrysAIDAManager();
+  //! Pointer to the singleton instance of this class
   static singCrysAIDAManager* fInstance;
-
+  //! Pointer to the analysis factory
   AIDA::IAnalysisFactory* fAnalysisFactory;
+  //! Pointer to the histogram factory
   AIDA::IHistogramFactory* fFactory;
+  //! Pointer to the tuple factory
   AIDA::ITupleFactory* tFactory;
+  //! Pointer to the plotter
   AIDA::IPlotter* fPlotter;
+  //! Pointer to the tree
   AIDA::ITree* fTree;
 };
 

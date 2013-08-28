@@ -1,34 +1,8 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file analysis/singCrys/src/singCrysEventAction.cc
-/// \brief Implementation of the singCrysEventAction class
-//
-// $Id$
-// --------------------------------------------------------------
-//
+/*!
+ * \file singCrysEventAction.cc
+ * \brief Implementation file for the singCrysEventAction class. User defined
+ * event action class.
+ */
 
 #include "singCrysEventAction.hh"
 #ifdef AIDA_USE
@@ -49,8 +23,11 @@
 
 #include "singCrysSiliconHit.hh"
 
+// Constructor: gets the hits collection and sets up the analysis interface
+// for ROOT and/or AIDA.
 singCrysEventAction::singCrysEventAction()
 {
+  // Get the hits collection
   G4String HCname;
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   fSiHCID = SDman->GetCollectionID(HCname="SiliconHitsCollection");
@@ -58,12 +35,11 @@ singCrysEventAction::singCrysEventAction()
 
   #ifdef AIDA_USE
   fTuple = 0;
-  // Do some analysis
-
+  // Get the analysis manager  
   singCrysAIDAManager* analysisManager =
       singCrysAIDAManager::getInstance();
-
-  // Create a Tuple
+  // Create a Tuple. It contains the event number, the index of the deposit,
+  // and the energy of the deposit. 
   ITupleFactory* tFactory = analysisManager->getTupleFactory();
   if (tFactory)
   {
@@ -73,13 +49,16 @@ singCrysEventAction::singCrysEventAction()
   #endif // AIDA_USE
 
   #ifdef ROOT_USE
+  // Create a file and a tree
   myFile = new TFile("output.root", "recreate");
   myTree = new TTree("ntp1", "Tree with vectors");
+  // Create branches, one for the event ID, and one for the energy of the hits
   myTree->Branch("eventID", &eventID);
   myTree->Branch("energy", &energy);
   #endif // ROOT_USE
 }
 
+// Destructor: Writes data to file and cleans up analysis interface.
 singCrysEventAction::~singCrysEventAction()
 {
   #ifdef AIDA_USE
@@ -93,10 +72,13 @@ singCrysEventAction::~singCrysEventAction()
   #endif
 }
 
+// Actions to be carried out at the beginning of each event
 void singCrysEventAction::BeginOfEventAction(const G4Event*)
 {
 }
 
+// Actions to be carried out at the end of each event: process hits and write
+// the data to the ROOT and/or AIDA interface.
 void singCrysEventAction::EndOfEventAction(const G4Event* evt)
 {
   // Get event number
@@ -124,7 +106,8 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
       // Loop through all of the hits.
       for (G4int i = 0; i < nHits; i++)
       {
-        // If there is a nonzero energy deposit, 
+        // If there is a nonzero energy deposit, store information about the
+        // hit in the tuple. 
         singCrysSiliconHit* hit = (*SiHC)[i];
         G4double eDep = hit->GetEdep();
         if (eDep > 0.)
@@ -132,7 +115,6 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
           fTuple->fill(0, evtID);
           fTuple->fill(1, hitID);
           fTuple->fill(2, eDep);
-          G4cout << evtID << " " << hitID << " " << eDep << G4endl;
           fTuple->addRow();
           hitID++;
         }
@@ -151,6 +133,8 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
     // Loop through all of the hits.
     for (G4int i = 0; i < nHits; i++)
     {
+      // Get the energy deposit from the hit. If it is nonzero, store
+      // the energy in the 'energy' vector, to be added to the file.
       singCrysSiliconHit* hit = (*SiHC)[i];
       G4double eDep = hit->GetEdep();
       if (eDep > 0.)
@@ -158,6 +142,8 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
         energy.push_back(eDep);
       }
     }
+    // After all hits have been processed, add the event ID and energy vector
+    // to the tree.
     myTree->Fill();
   }
   #endif // ROOT_USE

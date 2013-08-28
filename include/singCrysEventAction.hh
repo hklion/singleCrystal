@@ -1,37 +1,11 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file analysis/singCrys/include/singCrysEventAction.hh
-/// \brief Definition of the singCrysEventAction class
-//
-// $Id$
-// --------------------------------------------------------------
-//
+/*!
+ * \file singCrysEventAction.hh
+ * \brief Header file for the singCrysEventAction class. User defined event
+ * action class.
+ */
+
 #ifndef singCrysEventAction_h
 #define singCrysEventAction_h 1
-
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
@@ -49,32 +23,91 @@ using namespace AIDA;
 
 class singCrysEventActionMessenger;
 
+/*!
+ * \class singCrysEventAction
+ * \brief User-defined optional event action class. Defines events that occur
+ * before and after each event.
+ *
+ * User-defined optional event action class. This class defines the actions
+ * that occur before and after each event. This is used to store and process
+ * data from the simulation. Either or both of ROOT or AIDA are used for
+ * storing the data. The analysis will be done with the libraries that CMake
+ * found the last time it was run. For instance, ROOT analysis will be included
+ * if and only if CMake found the ROOT libraries. Otherwise, the code using
+ * ROOT will be excluded using a preprocessor directive. Similar exclusion
+ * is done for AIDA.
+ *
+ * The ROOT analysis outputs a ROOT file with two branches: event ID (int) and
+ * energy (std::vector). The event ID is the ID used by GEANT, starts at 0 and
+ * is incremented by one for each event. The energy vector is a vector
+ * containing the amount of energy deposited by each hit of a given event.
+ *
+ * The AIDA analysis outputs a fle with three branches: event ID (int),
+ * deposit ID (int), and energy (double). The event ID is determined as in the
+ * ROOT analysis. The deposit ID is the index of the hit in the hits
+ * collection. The deposit energy is the energy deposited by that hit.
+ */
 class singCrysEventAction : public G4UserEventAction
 {
   public:
+    //! Constructor
+    /*!
+     * Gets the hits collection, sets the verbosity, and starts the AIDA and/or
+     * ROOT analysis. If AIDA is being used, it generates at tuple with the
+     * appropriate data fields. If ROOT is being used, it generates a file and
+     * tree with branches for the data members to be saved.
+     */
     singCrysEventAction();
+    //! Destructor
+    /*!
+     * If AIDA is being used, it deletes the instance of the
+     * singCrysAIDAManager class (writitng the contents to a file in the
+     * process). If ROOT is being used, it writes the data to file, and closes
+     * it.
+     */
     virtual ~singCrysEventAction();
 
+    //! Actions to be carried out at the beginning of each event.
     virtual void BeginOfEventAction(const G4Event*);
+    //! Actions to be carreid out at the end of each event
+    /*!
+     * Processes the hits, outputting the necessary data to the AIDA or ROOT
+     * interface.
+     */
     virtual void EndOfEventAction(const G4Event*);
 
   private:
+    //! ID of the silicon hits collection
     G4int fSiHCID;
+    //! Verbosity level
     G4int fVerboseLevel;
     
     #ifdef ROOT_USE
+    //! Pointer to the ROOT TFile object
     TFile *myFile;
+    //! Pointer to the TTree
     TTree *myTree;
-    int eventID;
+    //! ID number of the event 
+    G4int eventID;
+    //! Vector to store energies of hits
     std::vector<double> energy;
     #endif // ROOT_USE
 
     #ifdef AIDA_USE
+    //! Tuple used in AIDA analysis
     ITuple* fTuple;
     #endif // AIDA_USE
 
   public:
+    //! Mutator method for the verbosity
+    /*!
+     * \param val Value to which to set the verbosity
+     */
     inline void SetVerbose(G4int val) { fVerboseLevel = val; }
+    //! Accessor method for the verbosity
+    /*!
+     * \return The verbosity
+     */
     inline G4int GetVerbose() const { return fVerboseLevel; }
 };
 

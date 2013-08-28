@@ -1,35 +1,12 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file analysis/singCrys/src/singCrysAIDAManager.cc
-/// \brief Implementation of the singCrysAIDAManager class
+/*!
+ * \file singCrysAIDAManager.cc
+ * \brief Implementation file for the singCrysAIDAManager class. Manages the
+ * AIDA-based analysis.
+ */
 
 #ifdef AIDA_USE
 
 #include <fstream>
-
 #include "G4ios.hh"
 #include "G4Run.hh"
 #include "G4Event.hh"
@@ -42,8 +19,10 @@
 
 #include "singCrysAIDAManager.hh"
 
+// Initialize the pointer to the class as NULL
 singCrysAIDAManager* singCrysAIDAManager::fInstance = 0;
 
+// Constructor: initialize analysis system and plotter
 singCrysAIDAManager::singCrysAIDAManager()
 :fAnalysisFactory(0), fFactory(0), tFactory(0), fPlotter(0)
 {
@@ -51,10 +30,14 @@ singCrysAIDAManager::singCrysAIDAManager()
   fAnalysisFactory = AIDA_createAnalysisFactory();
   if(fAnalysisFactory)
   {
+    // Get tree for file output
     AIDA::ITreeFactory* treeFactory = fAnalysisFactory->createTreeFactory();
-    fTree = treeFactory->create("singCrys.root","root",false,true,"compress=no");
+    fTree = treeFactory->
+      create("singCrys.root","root",false,true,"compress=no");
+    // Create factories
     fFactory = fAnalysisFactory->createHistogramFactory(*fTree);
     tFactory = fAnalysisFactory->createTupleFactory(*fTree);
+    // Create plotter
     AIDA::IPlotterFactory* pf = fAnalysisFactory->createPlotterFactory(0,0);
     if (pf) {
       fPlotter = pf->create("Plotter");
@@ -64,6 +47,8 @@ singCrysAIDAManager::singCrysAIDAManager()
   }
 }
 
+// Destructor: attempt to write data to file, and delete dynamically allocated
+// analysis tools.
 singCrysAIDAManager::~singCrysAIDAManager()
 {
   if (fAnalysisFactory)
@@ -78,25 +63,34 @@ singCrysAIDAManager::~singCrysAIDAManager()
     delete fAnalysisFactory;
   }
 }
+
+// Accessor method for the histogram factory
 AIDA::IHistogramFactory* singCrysAIDAManager::getHistogramFactory()
 {
   return fFactory;
 }
+
+// Accessor method for the tuple factory
 AIDA::ITupleFactory* singCrysAIDAManager::getTupleFactory()
 {
   return tFactory;
 }
+
+// Accessor method for the plotter
 AIDA::IPlotter* singCrysAIDAManager::getPlotter()
 {
   return fPlotter;
 }
 
+// Returns the pointer to the class, if the class has been initialized.
+// Otherwise creates an instance.
 singCrysAIDAManager* singCrysAIDAManager::getInstance()
 {
   if (fInstance == 0) fInstance = new singCrysAIDAManager();
   return fInstance;
 }
 
+// Deletes the instance of the class
 void singCrysAIDAManager::dispose()
 {
   if (fInstance != 0)

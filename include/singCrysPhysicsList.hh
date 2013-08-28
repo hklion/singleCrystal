@@ -59,12 +59,12 @@ class singCrysPhysicsList: public G4VUserPhysicsList
     void SetCuts();
     // Helper functions for 'ConstructParticle'
     //! Helper function that constructs all bosons
-    /*
+    /*!
      * Constructs, geantino, gamma, and optical photon.
      */
     void ConstructBosons();
     //! Helper function that constructs all leptons
-    /*
+    /*!
      * Constructs electron, positron, mu+, mu-, electron and mu (anti)neutrino.
      */
     void ConstructLeptons();
