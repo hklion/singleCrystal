@@ -269,7 +269,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Check overlaps in volumes
   G4bool checkOverlaps = config["checkOverlaps"].as<G4bool>();
 
-//====================NUMBERS=============================
+  // Numerical parameters
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   // Length along flats
   G4double crysSideLength = config["crysSideLength"].as<G4double>();

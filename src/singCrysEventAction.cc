@@ -20,8 +20,12 @@
 #include "G4UImanager.hh"
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
+#include "singCrysConfig.hh"
+#include <boost/program_options.hpp>
 
 #include "singCrysSiliconHit.hh"
+
+namespace po = boost::program_options;
 
 // Constructor: gets the hits collection and sets up the analysis interface
 // for ROOT and/or AIDA.
@@ -81,8 +85,14 @@ void singCrysEventAction::BeginOfEventAction(const G4Event*)
 // the data to the ROOT and/or AIDA interface.
 void singCrysEventAction::EndOfEventAction(const G4Event* evt)
 {
-  // Get event number
+  // Get event number. Print it if modulo a user-specified number
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  G4int printEvery = config["printEvery"].as<G4int>();
   G4int evtID = evt->GetEventID();
+  if (evtID % printEvery == 0)
+  {
+    G4cout << evtID << " events completed." << G4endl;
+  }
   // Get hits collection
   G4HCofThisEvent * HCE = evt->GetHCofThisEvent();
   singCrysSiliconHitsCollection* SiHC = 0;

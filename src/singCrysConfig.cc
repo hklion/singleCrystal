@@ -125,7 +125,10 @@ singCrysConfig::singCrysConfig()
       "Name of error file")
     // Options for singCrysPhysicsList
     ("optVerbosity", po::value<G4int>()->default_value(0),
-      "Verbosity for optical processes") 
+      "Verbosity for optical processes")
+    // Options for singCrysEventAction
+    ("printEvery", po::value<G4int>()->default_value(100),
+      "Print the event number every 'printEvery' event") 
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);
