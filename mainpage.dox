@@ -1,0 +1,18 @@
+/*!
+\mainpage singleCrystal
+
+<H2>Introduction </H2>
+
+singleCrystal is a program that simulates the interaction of a particle with
+a scintillating crystal. It is written in C++ using the <a href="http://www.geant4.org">GEANT4</a> library. The user is able to easily change a number of
+simulation parameters, including the material of the crystal and the type
+of particles that are
+
+<H2>Getting Started</H2>
+<H3>Requirements </H3>
+
+<H3>Compilation</H3>
+
+<H2> How To Guide</H2>
+
+ */
