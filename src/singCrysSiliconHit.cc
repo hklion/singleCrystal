@@ -79,11 +79,11 @@ void singCrysSiliconHit::Draw()
 // Print properties of hit
 void singCrysSiliconHit::Print()
 {
-  G4cout
+/*  G4cout
     << "  trackID: " << fTrackID << " APDNb: " << fAPDNb
     << " Edep: "
     << std::setw(7) << G4BestUnit(fEdep, "Energy")
     << " Position: "
     << std::setw(7) << G4BestUnit(fPos, "Length")
-    << G4endl;
+    << G4endl; */
 }

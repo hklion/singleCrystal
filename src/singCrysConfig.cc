@@ -25,11 +25,11 @@ singCrysConfig::singCrysConfig()
     ("crysNumSides", po::value<G4int>()->default_value(4),
       "Number of sides of the crystal")
     ("crysSideLength", po::value<G4double>()->default_value(30.),
-      "Length of flats (mm)")
+      "Length of crystal flats (mm)")
     ("crysSizeZ", po::value<G4double>()->default_value(110.),
       "Z axis crystal length (mm)")
     ("layer1Thick", po::value<G4double>()->default_value(0.1),
-      "Thickness of layer surrounding crystal(mm)")
+      "Thickness of layer surrounding crystal (mm)")
     ("layer2Thick", po::value<G4double>()->default_value(0.1),
       "Thickness of layer surrounding layer1 (mm)")
     ("AlCoating1Z", po::value<G4double>()->default_value(0.1),
@@ -69,7 +69,8 @@ singCrysConfig::singCrysConfig()
       "Material of the world")
     ("coating1Mat", po::value<std::string>()->default_value("G4_Galactic"),
       "Material of the top Al APD case coating")
-    ("coating2Mat", po::value<std::string>()->default_value("Epoxy"))
+    ("coating2Mat", po::value<std::string>()->default_value("Epoxy"),
+      "Material of the bottom Al APD case coating")
     // Whether to check for volume overlaps
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")
@@ -90,17 +91,18 @@ singCrysConfig::singCrysConfig()
     ("dataPath", po::value<std::string>()->default_value(""),
       "Path to data files")
     ("crysRIndexFile", po::value<std::string>()
-      ->default_value("LYSO_RIndex.dat"), "File name for crys refractive index")
+      ->default_value("LYSO_RIndex.dat"),
+      "File name for crystal refractive index")
     ("crysAbsFile", po::value<std::string>()->default_value("LYSO_Abs.dat"),
-      "File name for crys absorption length (values in mm)")
+      "File name for crystal absorption length (values in mm)")
     ("crysRayFile", po::value<std::string>()->default_value("LYSO_Ray.dat"),
-      "File name for crys Rayleigh scattering length (values in mm)")
+      "File name for crystal Rayleigh scattering length (values in mm)")
     ("crysFastScintFile",
       po::value<std::string>()->default_value("LYSO_FastScint.dat"),
-      "File name for crys fast component scintillation intensity")
+      "File name for crystal fast component scintillation intensity")
     ("crysSlowScintFile",
       po::value<std::string>()->default_value(""),
-      "File name for crys slow component scintillation intensity")
+      "File name for crystal slow component scintillation intensity")
     ("SiQEffFile", po::value<std::string>()->default_value("Si_QEff.dat"),
       "File name for silicon quantum efficiency")
     ("SiReflFile", po::value<std::string>()->default_value("Si_Refl.dat"),
