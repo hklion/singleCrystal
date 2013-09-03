@@ -118,6 +118,12 @@ singCrysConfig::singCrysConfig()
       "Type of particle")
     ("particleEnergy", po::value<G4double>()->default_value(105),
       "Energy of particle (MeV)")
+    ("particleXPos", po::value<G4double>()->default_value(0.),
+      "Initial X position of particle (mm)")
+    ("particleYPos", po::value<G4double>()->default_value(0.),
+      "Initial Y position of particle (mm)")
+    ("particleZPos", po::value<G4double>()->default_value(0.),
+      "Initial Z position of particle (mm)")
     // Options for singCrysUIsession
     ("logfileName",
       po::value<std::string>()->default_value("singleCrystal.log"),

@@ -7,10 +7,13 @@
 #ifndef singCrysPrimaryGeneratorAction_h
 #define singCrysPrimaryGeneratorAction_h
 
+#include "globals.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4ThreeVector.hh"
 
 class G4ParticleGun;
 class G4Event;
+class singCrysPrimaryGeneratorMessenger;
 
 /*!
  * \class singCrysPrimaryGeneratorAction
@@ -45,10 +48,21 @@ class singCrysPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
      * called by GEANT.
      */
     void GeneratePrimaries(G4Event* anEvent);
+    //! Function that sets the three-vector position of the particle gun
+    /*!
+     * Sets the three-vector position of the particle gun. Can be called
+     * interactively using the /singCrys/PGA/pos command.
+     *\param newPos The G4ThreeVector of the new position
+     */
+    void setGunPos(G4ThreeVector newPos);
 
   private:
     //! Particle gun used to 'shoot' particles to generate an event
     G4ParticleGun* particleGun;
+    //! Position of the particle gun
+    G4ThreeVector gunPos;
+    //! Pointer to the PrimaryGeneratorMessenger class
+    singCrysPrimaryGeneratorMessenger* messenger;
 };
 
 #endif

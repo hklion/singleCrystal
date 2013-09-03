@@ -17,6 +17,7 @@
 #include "G4SystemOfUnits.hh"
 #include <boost/program_options.hpp>
 #include "singCrysConfig.hh"
+#include "singCrysPrimaryGeneratorMessenger.hh"
 
 #include "Randomize.hh"
 
@@ -26,10 +27,11 @@ namespace po = boost::program_options;
 singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
 {
   po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+  messenger = new singCrysPrimaryGeneratorMessenger(this);
   // Declare the particle gun
   G4int n_particle = config["n_particle"].as<G4int>();
   particleGun = new G4ParticleGun(n_particle);
-  
+
   // Choose the particle for the gun
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4String particleName = (G4String) config["particleName"].as<std::string>();
@@ -37,6 +39,11 @@ singCrysPrimaryGeneratorAction::singCrysPrimaryGeneratorAction()
     SetParticleDefinition(particleTable->FindParticle(particleName));
   G4double particleEnergy = config["particleEnergy"].as<G4double>();
   particleGun->SetParticleEnergy(particleEnergy * MeV);
+
+  // Choose the default position as defined in the config file
+  gunPos = G4ThreeVector(config["particleXPos"].as<G4double>(),
+                         config["particleYPos"].as<G4double>(),
+                         config["particleZPos"].as<G4double>());
 }
 
 // Destructor: delete the particle gun
@@ -78,9 +85,13 @@ void singCrysPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double gunZ0 = crystalZHalfLength * (G4UniformRand() * 2 - 1);
   // Place gun at random z coordinate along crystal length and at a position
   // known to be outside of the crystal.
-  particleGun->
-    SetParticlePosition(G4ThreeVector(0.0, 0., 1.1 * crystalZHalfLength));
-    //SetParticlePosition(G4ThreeVector(0.0, crystalXYHalfLength*1.8, gunZ0));
+  particleGun->SetParticlePosition(gunPos);  
   particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0, 0.0, -1.0));
   particleGun->GeneratePrimaryVertex(anEvent);
+}
+
+// Sets the particle gun position to a new G4ThreeVector
+void singCrysPrimaryGeneratorAction::setGunPos(G4ThreeVector newVal)
+{
+  gunPos = newVal;
 }
