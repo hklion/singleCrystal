@@ -31,6 +31,8 @@ namespace po = boost::program_options;
 // for ROOT and/or AIDA.
 singCrysEventAction::singCrysEventAction()
 {
+  // Get the variables map from the configuration file
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
   // Get the hits collection
   G4String HCname;
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
@@ -54,7 +56,8 @@ singCrysEventAction::singCrysEventAction()
 
   #ifdef ROOT_USE
   // Create a file and a tree
-  myFile = new TFile("output.root", "recreate");
+  G4String rootOutfile = (G4String) config["rootOutfile"].as<std::string>();
+  myFile = new TFile(rootOutfile, "recreate");
   myTree = new TTree("ntp1", "Tree with vectors");
   // Create branches, one for the event ID, and one for the energy of the hits
   myTree->Branch("eventID", &eventID);

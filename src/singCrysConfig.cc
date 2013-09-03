@@ -136,7 +136,12 @@ singCrysConfig::singCrysConfig()
       "Verbosity for optical processes")
     // Options for singCrysEventAction
     ("printEvery", po::value<G4int>()->default_value(100),
-      "Print the event number every 'printEvery' event") 
+      "Print the event number every 'printEvery' event")
+    ("rootOutfile", po::value<std::string>()->default_value("output.root"),
+      "File for the ROOT-type output")
+    // Options for singCrysAIDAManager
+    ("aidaOutfile", po::value<std::string>()->default_value("aida.root"),
+      "File for the AIDA-type output") 
     ;
   // Add to map of stored options
   po::store(parse_config_file(ini_file, desc), vm);

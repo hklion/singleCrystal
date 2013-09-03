@@ -86,7 +86,7 @@ void singCrysPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Place gun at random z coordinate along crystal length and at a position
   // known to be outside of the crystal.
   particleGun->SetParticlePosition(gunPos);  
-  particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0, 0.0, -1.0));
+  particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0, -1.0, 0.0));
   particleGun->GeneratePrimaryVertex(anEvent);
 }
 

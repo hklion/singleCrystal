@@ -18,6 +18,10 @@
 #include <AIDA/AIDA.h>
 
 #include "singCrysAIDAManager.hh"
+#include "singCrysConfig.hh"
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
 
 // Initialize the pointer to the class as NULL
 singCrysAIDAManager* singCrysAIDAManager::fInstance = 0;
@@ -26,14 +30,17 @@ singCrysAIDAManager* singCrysAIDAManager::fInstance = 0;
 singCrysAIDAManager::singCrysAIDAManager()
 :fAnalysisFactory(0), fFactory(0), tFactory(0), fPlotter(0)
 {
+  // Get variables map with configuration file options
+  po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
   // Hooking an AIDA compliant analysis system.
   fAnalysisFactory = AIDA_createAnalysisFactory();
   if(fAnalysisFactory)
   {
     // Get tree for file output
+    G4String aidaOutfile = (G4String) config["aidaOutfile"].as<std::string>();
     AIDA::ITreeFactory* treeFactory = fAnalysisFactory->createTreeFactory();
     fTree = treeFactory->
-      create("singCrys.root","root",false,true,"compress=no");
+      create(aidaOutfile, "root", false, true, "compress=no");
     // Create factories
     fFactory = fAnalysisFactory->createHistogramFactory(*fTree);
     tFactory = fAnalysisFactory->createTupleFactory(*fTree);
