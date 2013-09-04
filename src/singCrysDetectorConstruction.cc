@@ -162,7 +162,7 @@ G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
   G4double resScale = config["resScale"].as<G4double>();
   G4double fastTimeConst = config["fastTimeConst"].as<G4double>();
   table->AddConstProperty("SCINTILLATIONYIELD", scintYield / keV);
-  table->AddConstProperty("RESOLUTIONSCALE", resScale); //TODO: FIX
+  table->AddConstProperty("RESOLUTIONSCALE", resScale);
   table->AddConstProperty("FASTTIMECONSTANT", fastTimeConst * ns);
 
   // If there is a second scintillation component, add it
@@ -335,6 +335,10 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     {0.5 * crysSizeZ + layer1Thick, -0.5 * crysSizeZ};
   G4double layer2ZPlaneCoords[2] =
     {0.5 * crysSizeZ + layer1Thick + layer2Thick, -0.5 * crysSizeZ};
+  // Y position of the solid that will be subtracted from layer1 in order to
+  // roughen one face of the crystal.
+  G4double layer1InsertYPos = crysRadLen + layer1Thick/2;
+  G4ThreeVector translInsert = G4ThreeVector(0., layer1InsertYPos, 0.);
 
   // Make aluminum casing for APD. It is made by making a G4Polyhedra with
   // the same number of sides as the crystal. Then the translated cyrstal
@@ -377,6 +381,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4String crysMatStr = (G4String) config["crysMat"].as<std::string>();
   G4String layer1MatStr = (G4String) config["layer1Mat"].as<std::string>();
   G4String layer2MatStr = (G4String) config["layer2Mat"].as<std::string>();
+  G4String layer1InsertMatStr = layer1MatStr;
   G4String worldMatStr = (G4String) config["worldMat"].as<std::string>();
   G4String APDMatStr = "G4_AIR";
   G4String casingMatStr = "G4_ALUMINUM_OXIDE";
@@ -390,6 +395,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4Material* crysMat = nist->FindOrBuildMaterial(crysMatStr);
   G4Material* layer1Mat = nist->FindOrBuildMaterial(layer1MatStr);
   G4Material* layer2Mat = nist->FindOrBuildMaterial(layer2MatStr);
+  G4Material* layer1InsertMat = nist->FindOrBuildMaterial(layer1InsertMatStr);
   G4Material* worldMat = nist->FindOrBuildMaterial(worldMatStr);
   G4Material* APDMat = nist->FindOrBuildMaterial(APDMatStr);
   G4Material* casingMat = nist->FindOrBuildMaterial(casingMatStr);
@@ -404,6 +410,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   crysMat->SetMaterialPropertiesTable(generateTable(crysMatStr));
   layer1Mat->SetMaterialPropertiesTable(generateTable(layer1MatStr));
   layer2Mat->SetMaterialPropertiesTable(generateTable(layer2MatStr));
+  layer1InsertMat->
+    SetMaterialPropertiesTable(generateTable(layer1InsertMatStr));
   worldMat->SetMaterialPropertiesTable(generateTable(worldMatStr));
   epoxyMat->SetMaterialPropertiesTable(generateTable(epoxyMatStr));
   APDAlCaseMat->SetMaterialPropertiesTable(generateTable(APDAlCaseMatStr));
@@ -426,14 +434,14 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                            crysRInner,
                                            crysROuter);
   // Layers surroudning crystals
-  G4Polyhedra* solidLayer1 = new G4Polyhedra("Layer 1",
-                                            rotation,
-                                            2*pi + rotation,
-                                            crysNumSides,
-                                            2,
-                                            layer1ZPlaneCoords,
-                                            crysRInner,
-                                            layer1ROuter);
+  G4Polyhedra* solidLayer1full = new G4Polyhedra("Layer 1 Full",
+                                                 rotation,
+                                                 2*pi + rotation,
+                                                 crysNumSides,
+                                                 2,
+                                                 layer1ZPlaneCoords,
+                                                 crysRInner,
+                                                 layer1ROuter);
 
   G4Polyhedra* solidLayer2 = new G4Polyhedra("Layer 2",
                                             rotation,
@@ -442,7 +450,20 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                             2,
                                             layer2ZPlaneCoords,
                                             crysRInner,
-                                            layer2ROuter); 
+                                            layer2ROuter);
+  // Solid to be subtracted from layer1 in order to vary the surface of the
+  // crystal.
+  G4Box* solidLayer1Insert = new G4Box("Layer 1 Insert",
+                                       crysSideLength * 0.5,
+                                       layer1Thick * 0.5,
+                                       crysSizeZ * 0.5);
+  // Subtract the insert from the current layer1 to obtain the final layer1
+  // solid.
+  G4SubtractionSolid* solidLayer1 = new G4SubtractionSolid("Layer 1",
+                                                           solidLayer1full,
+                                                           solidLayer1Insert,
+                                                           0,
+                                                           translInsert);
 
   // Define solids for APD
   G4Box* solidAPD = new G4Box("APD",
@@ -521,6 +542,9 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalVolume* logicLayer2 = new G4LogicalVolume(solidLayer2,
                                                      layer2Mat,
                                                      "Layer 2");
+  G4LogicalVolume* logicLayer1Insert = new G4LogicalVolume(solidLayer1Insert,
+                                                           layer1InsertMat,
+                                                           "Layer 1 Insert");
   G4LogicalVolume* logicAPD = new G4LogicalVolume(solidAPD,
                                                   APDMat,
                                                   "APD");
@@ -581,6 +605,14 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                     false,
                                                     0,
                                                     checkOverlaps);
+  G4VPhysicalVolume* physLayer1Insert = new G4PVPlacement(0,
+                                                          translInsert,
+                                                          logicLayer1Insert,
+                                                          "Layer 1 Insert",
+                                                          logicLayer2,
+                                                          false,
+                                                          0,
+                                                          checkOverlaps);
   // Place epoxy, casing, and silicon in APD.
   G4VPhysicalVolume* physEpoxy = new G4PVPlacement(0,
                                                    translEpoxy,
@@ -646,7 +678,29 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                       checkOverlaps);
 
   // Define the optical boundaries between physical volumes
-  // Define the aluminum-layer1 boundary.
+  // Define the crystal-layer1 insert boundary.
+  G4OpticalSurface* OpCrysLayer1InsSurface = 
+    new G4OpticalSurface("CrysLayer1InsSurface");
+  OpCrysLayer1InsSurface->SetModel(unified);
+  OpCrysLayer1InsSurface->SetType(surfaceType(crysMatStr, layer1InsertMatStr));
+  OpCrysLayer1InsSurface->SetFinish(polished);
+  OpCrysLayer1InsSurface->SetSigmaAlpha(0.1);
+  G4LogicalBorderSurface* CrysLayer1InsSurface = new
+    G4LogicalBorderSurface("CrysLayer1InsSurface", physCrys, physLayer1Insert,
+                           OpCrysLayer1InsSurface);
+
+  // Define the layer1 insert-crystal boundary.
+  G4OpticalSurface* OpLayer1InsCrysSurface = 
+    new G4OpticalSurface("Layer1InsCrysSurface");
+  OpLayer1InsCrysSurface->SetModel(unified);
+  OpLayer1InsCrysSurface->SetType(surfaceType(crysMatStr, layer1InsertMatStr));
+  OpLayer1InsCrysSurface->SetFinish(polished);
+  OpLayer1InsCrysSurface->SetSigmaAlpha(0.1);
+  G4LogicalBorderSurface* Layer1InsCrysSurface = new
+    G4LogicalBorderSurface("Layer1InsCrysSurface", physLayer1Insert, physCrys,                             OpLayer1InsCrysSurface);
+
+
+  // Define the layer1-aluminum boundary.
   G4OpticalSurface* OpLayer1AlSurface = new G4OpticalSurface("Layer1AlSurface");
   OpLayer1AlSurface->SetModel(unified);
   OpLayer1AlSurface->SetType(surfaceType(layer1MatStr, layer2MatStr));
@@ -655,8 +709,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalBorderSurface* Layer1AlSurface = new
     G4LogicalBorderSurface("Layer1AlSurface", physLayer1, physLayer2,
                            OpLayer1AlSurface);
-
-  // Define the aluminum-world boundary.
+  
+  // Define the world-aluminum boundary.
   G4OpticalSurface* OpWorldAlSurface = new G4OpticalSurface("WorldAlSurface");
   OpWorldAlSurface->SetModel(unified);
   OpWorldAlSurface->SetType(surfaceType(worldMatStr, layer2MatStr));
@@ -686,7 +740,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing",
     logicCasing, optCasing);
 
-  // Now define the aluminum casing-coating2 boundary.
+  // Now define the coating2-aluminum casing boundary.
   G4OpticalSurface* OpCoat2APDCaseSurface = 
     new G4OpticalSurface("Coating2APDCaseSurface");
   OpCoat2APDCaseSurface->SetModel(glisur);
