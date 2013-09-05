@@ -122,6 +122,26 @@ G4SurfaceType singCrysDetectorConstruction::
     return dielectric_dielectric;
 }
 
+// Determines whether to use a polished or ground surface
+G4OpticalSurfaceFinish singCrysDetectorConstruction::
+  finishType(G4String finishStr)
+{
+  if (finishStr.compareTo("ground") == 0)
+  {
+    return ground;
+  }
+  else if (finishStr.compareTo("polished") == 0)
+  {
+    return polished;
+  }
+  else
+  {
+    G4cerr << "Can't find surface: " << finishStr << ". Using polished"
+      << G4endl;
+    return polished;
+  }
+}
+
 // Constructs and returns material properties table for the crystal
 G4MaterialPropertiesTable* singCrysDetectorConstruction::generateCrysTable()
 {
@@ -678,13 +698,22 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                       checkOverlaps);
 
   // Define the optical boundaries between physical volumes
+  // Get a few parameters
+  G4String crysLayer1InsSurfFinish =
+    (G4String) config["crysLayer1InsSurfFinish"].as<std::string>();
+  G4double crysLayer1InsSurfSigAlpha =
+    config["crysLayer1InsSurfSigAlpha"].as<G4double>();
+  G4String crysLayer1SurfFinish = 
+    (G4String) config["crysLayer1SurfFinish"].as<std::string>();
+  G4double crysLayer1SurfSigAlpha =
+    config["crysLayer1SurfSigAlpha"].as<G4double>();
   // Define the crystal-layer1 insert boundary.
   G4OpticalSurface* OpCrysLayer1InsSurface = 
     new G4OpticalSurface("CrysLayer1InsSurface");
   OpCrysLayer1InsSurface->SetModel(unified);
   OpCrysLayer1InsSurface->SetType(surfaceType(crysMatStr, layer1InsertMatStr));
-  OpCrysLayer1InsSurface->SetFinish(polished);
-  OpCrysLayer1InsSurface->SetSigmaAlpha(0.1);
+  OpCrysLayer1InsSurface->SetFinish(finishType(crysLayer1InsSurfFinish));
+  OpCrysLayer1InsSurface->SetSigmaAlpha(crysLayer1InsSurfSigAlpha);
   G4LogicalBorderSurface* CrysLayer1InsSurface = new
     G4LogicalBorderSurface("CrysLayer1InsSurface", physCrys, physLayer1Insert,
                            OpCrysLayer1InsSurface);
@@ -694,10 +723,32 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     new G4OpticalSurface("Layer1InsCrysSurface");
   OpLayer1InsCrysSurface->SetModel(unified);
   OpLayer1InsCrysSurface->SetType(surfaceType(crysMatStr, layer1InsertMatStr));
-  OpLayer1InsCrysSurface->SetFinish(polished);
-  OpLayer1InsCrysSurface->SetSigmaAlpha(0.1);
+  OpLayer1InsCrysSurface->SetFinish(finishType(crysLayer1InsSurfFinish));
+  OpLayer1InsCrysSurface->SetSigmaAlpha(crysLayer1InsSurfSigAlpha);
   G4LogicalBorderSurface* Layer1InsCrysSurface = new
     G4LogicalBorderSurface("Layer1InsCrysSurface", physLayer1Insert, physCrys,                             OpLayer1InsCrysSurface);
+
+  // Define the crystal-layer1 boundary.
+  G4OpticalSurface* OpCrysLayer1Surface = 
+    new G4OpticalSurface("CrysLayer1Surface");
+  OpCrysLayer1Surface->SetModel(unified);
+  OpCrysLayer1Surface->SetType(surfaceType(crysMatStr, layer1MatStr));
+  OpCrysLayer1Surface->SetFinish(finishType(crysLayer1SurfFinish));
+  OpCrysLayer1Surface->SetSigmaAlpha(crysLayer1SurfSigAlpha);
+  G4LogicalBorderSurface* CrysLayer1Surface = new
+    G4LogicalBorderSurface("CrysLayer1Surface", physCrys, physLayer1,
+                           OpCrysLayer1Surface);
+
+  // Define the layer1-crystal boundary.
+  G4OpticalSurface* OpLayer1CrysSurface = 
+    new G4OpticalSurface("Layer1CrysSurface");
+  OpLayer1CrysSurface->SetModel(unified);
+  OpLayer1CrysSurface->SetType(surfaceType(crysMatStr, layer1MatStr));
+  OpLayer1CrysSurface->SetFinish(finishType(crysLayer1SurfFinish));
+  OpLayer1CrysSurface->SetSigmaAlpha(crysLayer1SurfSigAlpha);
+  G4LogicalBorderSurface* Layer1CrysSurface = new
+    G4LogicalBorderSurface("Layer1CrysSurface", physLayer1, physCrys,
+                           OpLayer1CrysSurface);
 
 
   // Define the layer1-aluminum boundary.

@@ -71,6 +71,17 @@ singCrysConfig::singCrysConfig()
       "Material of the top Al APD case coating")
     ("coating2Mat", po::value<std::string>()->default_value("Epoxy"),
       "Material of the bottom Al APD case coating")
+    // Surface options
+    ("crysLayer1InsSurfFinish",
+      po::value<std::string>()->default_value("polished"),
+      "Finish type for the surface of the top crystal face")
+    ("crysLayer1InsSurfSigAlpha", po::value<G4double>()->default_value(0.1),
+      "SigmaAlpha (from UNIFIED model) for ground top crystal face (rad)")
+    ("crysLayer1SurfFinish",
+      po::value<std::string>()->default_value("polished"),
+      "Finish type for the surface of the rest of the crystal")
+    ("crysLayer1SurfSigAlpha", po::value<G4double>()->default_value(0.1),
+      "SigmaAlpha (from UNIFIED model) for rest of the crystal (rad)")
     // Whether to check for volume overlaps
     ("checkOverlaps", po::value<G4bool>()->default_value(true),
       "Check overlaps in geometry?")

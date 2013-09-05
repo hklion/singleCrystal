@@ -128,6 +128,17 @@ class singCrysDetectorConstruction : public G4VUserDetectorConstruction
      * \return The G4SurfaceType appropriate for the surface
      */
     G4SurfaceType surfaceType(G4String material1, G4String material2);
+    //! Chooses a finish type for a surface, converting from a string.
+    /*!
+     * If the string is either "ground" or "polished", the appropriate surface
+     * finish type is chosen. Otherwise, an error is printed and polished is
+     * chosen.
+     * \param finishStr The string passed in by the configuration file giving
+     * the type of finish the surface should have
+     * \return the G4OpticalSurfaceFinish appropriate for the surface
+     */
+    G4OpticalSurfaceFinish finishType(G4String finishStr);
+    //! Pointer to the sensitive detector that detects hits on the silicon APD
     singCrysSiliconSD* siliconSD;
 };
 
