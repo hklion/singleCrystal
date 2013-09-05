@@ -91,6 +91,18 @@ class singCrysEventAction : public G4UserEventAction
     G4int eventID;
     //! Vector to store energies of hits
     std::vector<double> energy;
+    //! Vector to store x position of hits
+    std::vector<double> xPos;
+    //! Vector to store y position of hits
+    std::vector<double> yPos;
+    //! Vector to store z position of hits
+    std::vector<double> zPos;
+    //! Vector to store x momentum of hits
+    std::vector<double> xPVec;
+    //! Vector to store y momentum of hits
+    std::vector<double> yPVec;
+    //! Vector to store z momentum of hits
+    std::vector<double> zPVec;
     #endif // ROOT_USE
 
     #ifdef AIDA_USE

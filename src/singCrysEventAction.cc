@@ -50,7 +50,7 @@ singCrysEventAction::singCrysEventAction()
   if (tFactory)
   {
     fTuple = tFactory->
-    create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy","");
+    create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy, xPos, yPos, zPos, xMomentum, yMomentum, zMomentum","");
   }
   #endif // AIDA_USE
 
@@ -62,6 +62,12 @@ singCrysEventAction::singCrysEventAction()
   // Create branches, one for the event ID, and one for the energy of the hits
   myTree->Branch("eventID", &eventID);
   myTree->Branch("energy", &energy);
+  myTree->Branch("xPos", &xPos);
+  myTree->Branch("yPos", &yPos);
+  myTree->Branch("zPos", &zPos);
+  myTree->Branch("xMomentum", &xPVec);
+  myTree->Branch("yMomentum", &yPVec);
+  myTree->Branch("zMomentum", &zPVec);
   #endif // ROOT_USE
 }
 
@@ -123,11 +129,19 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
         // hit in the tuple. 
         singCrysSiliconHit* hit = (*SiHC)[i];
         G4double eDep = hit->GetEdep();
+        G4ThreeVector position = hit->GetPos();
+        G4ThreeVector momentum = hit->GetPVec();
         if (eDep > 0.)
         {
           fTuple->fill(0, evtID);
           fTuple->fill(1, hitID);
           fTuple->fill(2, eDep);
+          fTuple->fill(3, position.x());
+          fTuple->fill(4, position.y());
+          fTuple->fill(5, position.z());
+          fTuple->fill(6, momentum.x());
+          fTuple->fill(7, momentum.y());
+          fTuple->fill(8, momentum.z());
           fTuple->addRow();
           hitID++;
         }
@@ -147,12 +161,20 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
     for (G4int i = 0; i < nHits; i++)
     {
       // Get the energy deposit from the hit. If it is nonzero, store
-      // the energy in the 'energy' vector, to be added to the file.
+      // the data in the appropriate vectors, to be added to the file.
       singCrysSiliconHit* hit = (*SiHC)[i];
       G4double eDep = hit->GetEdep();
+      G4ThreeVector position = hit->GetPos();
+      G4ThreeVector momentum = hit->GetPVec();
       if (eDep > 0.)
       {
         energy.push_back(eDep);
+        xPos.push_back(position.x());
+        yPos.push_back(position.y());
+        zPos.push_back(position.z());
+        xPVec.push_back(momentum.x());
+        yPVec.push_back(momentum.y());
+        zPVec.push_back(momentum.z());
       }
     }
     // After all hits have been processed, add the event ID and energy vector
