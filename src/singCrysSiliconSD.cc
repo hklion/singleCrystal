@@ -52,6 +52,7 @@ G4bool singCrysSiliconSD::ProcessHits(G4Step* aStep,
                                            ->GetCopyNumber());
   newHit->SetEdep(edep);
   newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
+  newHit->SetPVec(aStep->GetTrack()->GetMomentum());
 
   fHitsCollection->insert(newHit);
   newHit->Print();

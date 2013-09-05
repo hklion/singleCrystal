@@ -21,7 +21,8 @@ singCrysSiliconHit::singCrysSiliconHit()
     fTrackID(-1),
     fAPDNb(-1),
     fEdep(0.),
-    fPos(G4ThreeVector())
+    fPos(G4ThreeVector()),
+    fPVec(G4ThreeVector())
 {
 }
 
@@ -39,6 +40,7 @@ singCrysSiliconHit::singCrysSiliconHit(const singCrysSiliconHit& right)
   fAPDNb = right.fAPDNb;
   fEdep = right.fEdep;
   fPos = right.fPos;
+  fPVec = right.fPVec;
 }
 
 // Overloading for assignment operator
@@ -50,6 +52,7 @@ const singCrysSiliconHit& singCrysSiliconHit::
   fAPDNb = right.fAPDNb;
   fEdep = right.fEdep;
   fPos = right.fPos;
+  fPVec = right.fPVec;
   return *this;
 }
 

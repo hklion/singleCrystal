@@ -24,8 +24,8 @@
  *
  * User-defined hit class. Instances of this class are generated when a hit
  * is recorded in the sensitive detector. They contain information about energy,
- * which APD the hit was recorded on, the position of the hit, and the track
- * ID.
+ * which APD the hit was recorded on, the position and momentum of the hit, and
+ * the track ID.
  */
 
 class singCrysSiliconHit : public G4VHit
@@ -92,6 +92,11 @@ class singCrysSiliconHit : public G4VHit
      * \param xyz Position
      */
     void SetPos(G4ThreeVector xyz){fPos = xyz;};
+    //! Mutator method for the momentum of the hit
+    /*!
+     * \param xyz Momentum
+     */
+    void SetPVec(G4ThreeVector xyz){fPVec = xyz;};
 
     // Get methods
     //! Accessor method for the track ID
@@ -114,6 +119,11 @@ class singCrysSiliconHit : public G4VHit
      * \return Position
      */
     G4ThreeVector GetPos() const{return fPos;};
+    //! Accessor method for the momentum of the hit
+    /*!
+     * \return Momentum
+     */
+    G4ThreeVector GetPVec() const{return fPVec;};
 
   private:
     //! Track ID
@@ -124,6 +134,8 @@ class singCrysSiliconHit : public G4VHit
     G4double fEdep;
     //! Position of the hit
     G4ThreeVector fPos;
+    //! Momentum of the hit
+    G4ThreeVector fPVec;
 };
 
 typedef G4THitsCollection<singCrysSiliconHit> singCrysSiliconHitsCollection;
