@@ -82,7 +82,7 @@ class singCrysEventAction : public G4UserEventAction
     //! Verbosity level
     G4int fVerboseLevel;
     
-    #ifdef ROOT_USE
+#ifdef ROOT_USE
     //! Pointer to the ROOT TFile object
     TFile *myFile;
     //! Pointer to the TTree
@@ -103,12 +103,12 @@ class singCrysEventAction : public G4UserEventAction
     std::vector<double> yPVec;
     //! Vector to store z momentum of hits
     std::vector<double> zPVec;
-    #endif // ROOT_USE
+#endif // ROOT_USE
 
-    #ifdef AIDA_USE
+#ifdef AIDA_USE
     //! Tuple used in AIDA analysis
     ITuple* fTuple;
-    #endif // AIDA_USE
+#endif // AIDA_USE
 
   public:
     //! Mutator method for the verbosity

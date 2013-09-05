@@ -39,7 +39,7 @@ singCrysEventAction::singCrysEventAction()
   fSiHCID = SDman->GetCollectionID(HCname="SiliconHitsCollection");
   fVerboseLevel = 1;
 
-  #ifdef AIDA_USE
+#ifdef AIDA_USE
   fTuple = 0;
   // Get the analysis manager  
   singCrysAIDAManager* analysisManager =
@@ -52,9 +52,9 @@ singCrysEventAction::singCrysEventAction()
     fTuple = tFactory->
     create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy, xPos, yPos, zPos, xMomentum, yMomentum, zMomentum","");
   }
-  #endif // AIDA_USE
+#endif // AIDA_USE
 
-  #ifdef ROOT_USE
+#ifdef ROOT_USE
   // Create a file and a tree
   G4String rootOutfile = (G4String) config["rootOutfile"].as<std::string>();
   myFile = new TFile(rootOutfile, "recreate");
@@ -68,21 +68,21 @@ singCrysEventAction::singCrysEventAction()
   myTree->Branch("xMomentum", &xPVec);
   myTree->Branch("yMomentum", &yPVec);
   myTree->Branch("zMomentum", &zPVec);
-  #endif // ROOT_USE
+#endif // ROOT_USE
 }
 
 // Destructor: Writes data to file and cleans up analysis interface.
 singCrysEventAction::~singCrysEventAction()
 {
-  #ifdef AIDA_USE
+#ifdef AIDA_USE
   singCrysAIDAManager::dispose();
-  #endif // AIDA_USE
+#endif // AIDA_USE
   
-  #ifdef ROOT_USE
+#ifdef ROOT_USE
   myFile->Write();
   myFile->Close();
   delete myFile;
-  #endif
+#endif
 }
 
 // Actions to be carried out at the beginning of each event
@@ -111,7 +111,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
   }
 
   G4int nHits; // Number of hits
-  #ifdef AIDA_USE
+#ifdef AIDA_USE
   // Fill the tuple
 
   // Make sure there aren't going to be any issues with NULL pointers
@@ -148,9 +148,9 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
       }
     }
   }
-  #endif // AIDA_USE
+#endif // AIDA_USE
   
-  #ifdef ROOT_USE
+#ifdef ROOT_USE
   energy.clear();
   eventID = evtID;
   if (SiHC)
@@ -181,6 +181,6 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
     // to the tree.
     myTree->Fill();
   }
-  #endif // ROOT_USE
+#endif // ROOT_USE
 
 }
