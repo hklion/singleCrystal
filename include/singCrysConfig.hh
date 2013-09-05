@@ -20,6 +20,30 @@ namespace po = boost::program_options;
  * method. It can then subsequently be called with the GetInstance method.
  * Calling LoadFile again with a different file name will do nothing. The
  * variables map is stored in vm. The map is accessed by the GetMap method.
+ *
+ * <H3>How to add a new option</H3>
+ *
+ * In the constructor for singCrysConfig, there is a list of all of the allowed
+ * configuration file options. The information for each option is contained
+ * within parentheses. There are generally three fields to fill in: option
+ * name, option type and default value, and a descritpion of the option. The
+ * option name is what the option is referred to in the configuration file. The
+ * type can be any of the GEANT4 types, except for G4String. Instead of
+ * G4String, use std::string and typecast the option value to a G4String when
+ * retrieving the value. The specification of a default value is optional.
+ *
+ * To retrieve an option value in another class, first get the pointer to the
+ * singleton instance of singCrysConfig, and then use the
+ * singCrysConfig::GetMap() method to get the pointer to the variables_map
+ * storing the option names and values. An example of how to retrieve the
+ * values of a few options is shown below.
+ *
+ * \code
+ * namespace po = boost::program_options;
+ * po::variables_map config = *(singCrysConfig::GetInstance()->GetMap());
+ * G4int crysNumSides = config["crysNumSides"].as<G4int>();
+ * G4String crysMat = (G4String) config["crysMat"].as<std::string>();
+ * \endcode
  */ 
 
 class singCrysConfig {

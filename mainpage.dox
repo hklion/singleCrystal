@@ -6,13 +6,35 @@
 singleCrystal is a program that simulates the interaction of a particle with
 a scintillating crystal. It is written in C++ using the <a href="http://www.geant4.org">GEANT4</a> library. The user is able to easily change a number of
 simulation parameters, including the material of the crystal and the type
-of particles that are
+of particles that generate the events.
 
 <H2>Getting Started</H2>
 <H3>Requirements </H3>
 
+singleCrystal requires GEANT4 version 9.6. In order to output ROOT files,
+either ROOT or AIDA must be installed and interfaced with GEANT4. ROOT is
+preferred and will give a more intuitive ROOT tree structure. It also requires
+the C++ Boost library program_options and cmake.
+
 <H3>Compilation</H3>
 
-<H2> How To Guide</H2>
+Run the command
+\code
+cmake -DGeant4_DIR=/path/to/GEANT4/libraries/ .
+\endcode
+Cmake will
+search for AIDA and ROOT libraries. It will turn on preprocessor flags for the
+analysis tools it finds, and the relevant code will be included in the
+compilation. Cmake will automatically generate a Makefile.
 
+<H2>Running</H2>
+
+The makefile will create a binary called singleCrystal. It takes two optional
+command-line arguments, --config and --script. The former can also be
+abbreviated -c and denotes the configuration file to be used. An example
+configuration file, config.ini, that includes all of the possible options is
+included. The latter denotes the script to be run in batch mode. It is the only
+positional argument. If no script is denoted, interactive mode and the
+visualization will be started. The option --help will also print all this
+information.
  */

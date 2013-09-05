@@ -23,6 +23,21 @@ class singCrysSiliconSD;
  * Mandatory user detector construction class. Builds a LYSO crystal with a
  * simplified silicon APD on one end. Hits on silicon chip in APD are recorded
  * using a SensitiveDetector in the APD epoxy layer.
+ *
+ * <H3>How to add a new material</H3>
+ * If it is not a built-in GEANT4 material, make a new G4Material in
+ * singCrysDetectorConstruction::DefineMaterials(). If it is going to interact
+ * with optical photons, then a G4MaterialPropertiesTable generator function
+ * should be written, and associate the material string and function call in
+ * singCrysDetectorConstruction::generateTable(G4String material). If it should
+ * optically act like a metal, add its name to the list of strings to check in
+ * both singCrysDetectorConstruction::surfaceType functions. If the new material
+ * is the crystal material, then the only additional change necessary is that
+ * the crystal optical properties data file names be updated in the
+ * configuration file. If the material is used for something else and it
+ * requires optical properties, new properties will need to be added in the
+ * singCrysConfig constructor and retrieved in the appropriate place in
+ * singCrysDetectorConstruction::Construct().
  */
 
 class singCrysDetectorConstruction : public G4VUserDetectorConstruction
