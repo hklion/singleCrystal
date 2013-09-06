@@ -152,11 +152,18 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
   
 #ifdef ROOT_USE
   energy.clear();
+  xPos.clear();
+  yPos.clear();
+  zPos.clear();
+  xPVec.clear();
+  yPVec.clear();
+  zPVec.clear();
   eventID = evtID;
   if (SiHC)
   {
     // Get the number of hits
     nHits = SiHC->entries();
+    G4cout << nHits << " hits" << G4endl;
     // Loop through all of the hits.
     for (G4int i = 0; i < nHits; i++)
     {
