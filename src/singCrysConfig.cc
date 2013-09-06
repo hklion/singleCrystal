@@ -135,6 +135,12 @@ singCrysConfig::singCrysConfig()
       "Initial Y position of particle (mm)")
     ("particleZPos", po::value<G4double>()->default_value(0.),
       "Initial Z position of particle (mm)")
+    ("momentumX", po::value<G4double>()->default_value(0.),
+      "X component of direction of initial momentum of particle")
+    ("momentumY", po::value<G4double>()->default_value(0.),
+      "Y component of direction of initial momentum of particle")
+    ("momentumZ", po::value<G4double>()->default_value(-1.),
+      "Z component of direction of initial momentum of particle")
     // Options for singCrysUIsession
     ("logfileName",
       po::value<std::string>()->default_value("singleCrystal.log"),

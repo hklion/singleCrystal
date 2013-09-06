@@ -61,6 +61,8 @@ class singCrysPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ParticleGun* particleGun;
     //! Position of the particle gun
     G4ThreeVector gunPos;
+    //! Momentum direction of particle gun
+    G4ThreeVector gunPDir;
     //! Pointer to the PrimaryGeneratorMessenger class
     singCrysPrimaryGeneratorMessenger* messenger;
 };
