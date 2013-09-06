@@ -13,3 +13,7 @@ latex
 */singCrysPSNPhotons.*
 */singCrysRun.*
 */singCrysRunAction.*
+analysis/*.pdf
+analysis/data
+analysis/figures
+analysis/*.dat
