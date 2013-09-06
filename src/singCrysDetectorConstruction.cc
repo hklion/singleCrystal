@@ -407,7 +407,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4String casingMatStr = "G4_ALUMINUM_OXIDE";
   G4String epoxyMatStr = "Epoxy";
   G4String siliconMatStr = "G4_Si";
-  G4String APDAlCaseMatStr = "G4_Galactic";
+  G4String APDAlCaseMatStr = "G4_Al";
   G4String coating1MatStr = (G4String) config["coating1Mat"].as<std::string>();
   G4String coating2MatStr = (G4String) config["coating2Mat"].as<std::string>();
 
