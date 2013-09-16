@@ -755,8 +755,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4OpticalSurface* OpLayer1AlSurface = new G4OpticalSurface("Layer1AlSurface");
   OpLayer1AlSurface->SetModel(unified);
   OpLayer1AlSurface->SetType(surfaceType(layer1MatStr, layer2MatStr));
-  OpLayer1AlSurface->SetFinish(ground);
-  OpLayer1AlSurface->SetSigmaAlpha(0.1);
+  OpLayer1AlSurface->SetFinish(polished);
+  OpLayer1AlSurface->SetSigmaAlpha(0.0);
   G4LogicalBorderSurface* Layer1AlSurface = new
     G4LogicalBorderSurface("Layer1AlSurface", physLayer1, physLayer2,
                            OpLayer1AlSurface);
@@ -765,15 +765,15 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4OpticalSurface* OpWorldAlSurface = new G4OpticalSurface("WorldAlSurface");
   OpWorldAlSurface->SetModel(unified);
   OpWorldAlSurface->SetType(surfaceType(worldMatStr, layer2MatStr));
-  OpWorldAlSurface->SetFinish(ground);
-  OpWorldAlSurface->SetSigmaAlpha(0.1);
+  OpWorldAlSurface->SetFinish(polished);
+  OpWorldAlSurface->SetSigmaAlpha(0.0);
   G4LogicalBorderSurface* WorldAlSurface = new
     G4LogicalBorderSurface("WorldAlSurface", physWorld, physLayer2,
                            OpWorldAlSurface);
 
   // Make skin surface on silicon with a certain efficiency.
   G4OpticalSurface* optSilicon = new G4OpticalSurface("optSilicon");
-  optSilicon->SetModel(glisur);
+  optSilicon->SetModel(unified);
   optSilicon->SetFinish(polished);
   optSilicon->SetType(surfaceType(siliconMatStr));
   optSilicon->SetMaterialPropertiesTable(generateSiSurfaceTable());
@@ -784,8 +784,8 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Make a surface surounding the casing with a certain relfectivity
   G4OpticalSurface* optCasing = new G4OpticalSurface("optCasing");
   optCasing->SetModel(unified);
-  optCasing->SetFinish(ground);
-  optCasing->SetSigmaAlpha(0.2);
+  optCasing->SetFinish(polished);
+  optCasing->SetSigmaAlpha(0.0);
   optCasing->SetType(surfaceType(casingMatStr));
   optCasing->SetMaterialPropertiesTable(generateCeramicTable());
   G4LogicalSkinSurface* skinCasing = new G4LogicalSkinSurface("optCasing",
@@ -794,7 +794,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Now define the coating2-aluminum casing boundary.
   G4OpticalSurface* OpCoat2APDCaseSurface = 
     new G4OpticalSurface("Coating2APDCaseSurface");
-  OpCoat2APDCaseSurface->SetModel(glisur);
+  OpCoat2APDCaseSurface->SetModel(unified);
   OpCoat2APDCaseSurface->SetType(surfaceType(APDAlCaseMatStr,
     coating2MatStr));
   OpCoat2APDCaseSurface->SetFinish(polished);
