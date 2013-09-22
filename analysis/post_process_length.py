@@ -1,4 +1,12 @@
-#!/usr/bin/python
+# post_process_length.py
+# Script for generating histograms and plots of average number of hits and
+# energy deposits for a run that consists of events started at different
+# positions.
+
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
 
 from root_numpy import root2rec
 import numpy as np
@@ -9,6 +17,8 @@ from math import exp, pi, sqrt
 from probfit import BinnedChi2, UnbinnedLH, BinnedLH, Extended, Normalized
 from probfit import gaussian
 from iminuit import Minuit
+
+# <codecell>
 
 # Setup
 # Seed random number generator
@@ -28,13 +38,20 @@ interp_max = e_ph[-1]
 # energy.
 q_eff_fn = interpolate.UnivariateSpline(e_ph, q_eff)
 
+# <codecell>
+
 # Get data
-data = root2rec("../output/length_study/lengthStudy100small.root", treename="ntp1")
+data = root2rec("/home/pythontutorial/mountpoint/output/length_study/lengthStudy1000.root", treename="ntp1")
 print "got data"
 
 # Get output data file
 f = open("processed.dat", "w")
 
+# <codecell>
+
+# Cuts for the plotting of the data
+n_hits_plot_cut_low = 0
+n_hits_plot_cut_high = 500
 # Number of events processed
 iEvent_proc = 0
 # Arrays of processed number of hits and energy deposit
@@ -63,18 +80,13 @@ for i in range(len(data.eventID)):
             print hit_energy
         elif hit_energy < interp_min:
             print hit_energy
-        if (True):
-        #if (random.random() < q_eff_fn(hit_energy)):
-            n_hits_registered += 1 
+        if (random.random() < q_eff_fn(hit_energy)):
+            n_hits_registered += 1
             energy_registered += hit_energy
-    # Once all hits in an event have been processed, add the hit and energy
-    # counters to the respective lists, restricting the range if needed
-    if energy_registered < 0.002:
-        n_hits_proc.append(n_hits_registered)
-        energy_proc.append(energy_registered * 1000)
-    # Add all hits to the uncut histogram
-    n_hits_proc_uncut.append(n_hits_registered)
-    energy_proc_uncut.append(energy_registered * 1000)
+    # Add hits within plotting range
+    if n_hits_plot_cut_low < n_hits_registered < n_hits_plot_cut_high:
+        n_hits_proc_uncut.append(n_hits_registered)
+        energy_proc_uncut.append(energy_registered * 1000)
     f.write('%7d %7d %7.6f\n' % (eventID, n_hits_registered, energy_registered))
     # Print current progress
     iEvent_proc += 1
@@ -84,7 +96,7 @@ for i in range(len(data.eventID)):
     # event, we are at the end of a run, and should add our processed data to
     # the 'all' arrays. The working processed data arrays should also be set
     # to be empty.
-    if i == len(data.eventID) - 1 or data.eventID[i + 1] == 0: 
+    if i == len(data.eventID) - 1 or data.eventID[i + 1] == 0:
         n_hits_all.append(n_hits_proc)
         energy_all.append(energy_proc)
         n_hits_all_uncut.append(n_hits_proc_uncut)
@@ -94,90 +106,89 @@ for i in range(len(data.eventID)):
         n_hits_proc_uncut = []
         energy_proc_uncut = []
 
-dist = [-4.9, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-for i in range(len(dist)):
-    dist[i] += 5.5
+# <codecell>
+
+
+# <codecell>
+
+# Distances to APD face of crystal
+dist = [0.6, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5]
+# Bounds for fits
+low_fit_bounds = [90, 100, 125, 115, 120, 120, 120, 120, 120, 120, 120]
+high_fit_bounds = [130, 250, 175, 165, 160, 170, 165, 165, 160, 160, 165]
+en_low_fit_bounds = [0.25, 0.3, 0.375, 0.325, 0.33, 0.35, 0.35, 0.325, 0.325, 0.33, 0.325]
+en_high_fit_bounds = [0.38, 0.7, 0.5, 0.5, 0.467, 0.475, 0.475, 0.475, 0.475, 0.475, 0.475]
+nh_means = []
+en_means = []
+# Loop through each of the runs at a different distance
 for i in range(len(n_hits_all)):
+    # Get run data
     run = n_hits_all[i]
+    run_uncut = n_hits_all_uncut[i]
+    # Convert to numpy array
     run_np = np.zeros(len(run))
     for j in range(len(run)):
         run_np[j] = run[j]
-    n_bins = max(run) - min(run) + 1
-    hist(run, bins=n_bins, histtype='step')
+    # Determine number of bins
+    n_hits_bins_plot = max(run_uncut) - min(run_uncut) + 1
+    n_hits_bins_fit = max(run) - min(run) + 1
+    # Make histogram
+    hist(run_uncut, bins=n_hits_bins_plot, histtype='step')
+    norm_const = len(run) # Normalization constant
+    # Get PDF
+    pdf_nh = Normalized(gaussian, (min(run), max(run)))
+    pdf_nh = Extended(pdf_nh)
+    # Do fit
+    blh_nh = BinnedLH(pdf_nh, run_np, bound=(low_fit_bounds[i], high_fit_bounds[i]), bins=(high_fit_bounds[i] - low_fit_bounds[i] + 1), extended=True)
+    m_nh = Minuit(blh_nh, mean=150., sigma= 12., N=400, error_mean=10., error_sigma=1.,limit_sigma=(0.,10000.), error_N=10., limit_mean=(0,800))
+    m_nh.set_up(0.5)
+    m_nh.migrad()
+    nh_means.append(m_nh.values["mean"])
+    blh_nh.show(m_nh);
+    # Output plot
     title("Number of photons incident on APD, 511 keV gamma " + str(dist[i]) + "cm away from APD")
     xlabel("Number of photons")
     ylabel("Number of events")
     savefig("n_hits" + str(i) + ".pdf")
     figure()
-#    norm_const = len(run)
-#    pdf_nh = Normalized(gaussian, (min(run_np), max(run_np)))
-#    pdf_nh = Extended(pdf_nh)
-#    blh_nh = BinnedLH(pdf_nh, run_np, bins=n_bins, extended=True)
-#    m_nh = Minuit(blh_nh, mean=250., sigma= 10, N=norm_const, error_mean=10.,
-#    error_sigma=1.,limit_sigma=(0.,1000.), error_N=100.)
-#    m_nh.set_up(0.5)
-#    m_nh.migrad()
-#    blh_nh.show(m_nh)
-    savefig("n_hits" + str(i) + ".pdf")
-
-
-for i in range(len(energy_all)):
+    # Energy. Same procedure as for the number of hits.
     run = energy_all[i]
-    hist(run, bins=50, histtype='step')
-    title("Energy deposited on APD, 511 keV gamma " + str(dist[i]) + " cm away from APD")
+    run_uncut = energy_all_uncut[i]
+    run_np = np.zeros(len(run))
+    for j in range(len(run)):
+        run_np[j] = run[j]
+    energy_bins_plot = 15/(en_high_fit_bounds[i] - en_low_fit_bounds[i]) * (max(run) - min(run))
+    hist(run_uncut, bins=energy_bins_plot, histtype='step')
+    norm_const = len(run)
+    pdf_nh = Normalized(gaussian, (min(run), max(run)))
+    pdf_nh = Extended(pdf_nh)
+    blh_nh = BinnedLH(pdf_nh, run_np, bound=(en_low_fit_bounds[i], en_high_fit_bounds[i]), bins=15, extended=True)
+    m_nh = Minuit(blh_nh, mean=0.5, sigma= 0.1, N=400, error_mean=0.1, error_sigma=0.01,limit_sigma=(0.,10000.), error_N=10., limit_mean=(0,800), limit_N=(0,10000))
+    m_nh.set_up(0.5)
+    m_nh.migrad()
+    en_means.append(m_nh.values["mean"])
+    blh_nh.show(m_nh);
+    title("Energy deposited on APD, 511 keV gamma " + str(dist[i]) + "cm away from APD")
     xlabel("Energy (keV)")
     ylabel("Number of events")
-    savefig("edep" + str(i) + ".pdf")
+    savefig("energy" + str(i) + ".pdf")
     figure()
-'''
-# Copy regular arrays to appropriately sized numpy arrays
-n_hits_proc_np = np.zeros(len(n_hits_proc))
-energy_proc_np = np.zeros(len(energy_proc))
-for i in range(len(n_hits_proc)):
-    n_hits_proc_np[i] = n_hits_proc[i]
-    # Rescale the energy deposit to be in keV
-    energy_proc_np[i] = energy_proc[i] * 1000
-# Determine the number of bins for the number of hits for the fit-- need to be
-# careful because the distribution is discrete
-n_hits_bins = max(n_hits_proc_np) - min(n_hits_proc_np) + 1
-# Do the same for the full histogram
-n_hits_bins_uncut = max(n_hits_proc_uncut) - min(n_hits_proc_uncut) - 1
-# Make histogram
-hist(n_hits_proc_uncut, bins=n_hits_bins_uncut, histtype='step')
-# Fit for number of photons
-norm_const = len(n_hits_proc_np)
-pdf_nh = Normalized(gaussian, (min(n_hits_proc_np), max(n_hits_proc_np)))
-pdf_nh = Extended(pdf_nh)
-blh_nh = BinnedLH(pdf_nh, n_hits_proc_np, bins=n_hits_bins, extended=True)
-m_nh = Minuit(blh_nh, mean=170., sigma= 10., N=norm_const, error_mean=10.,
-    error_sigma=1.,limit_sigma=(0.,1000.), error_N=100.)
-m_nh.set_up(0.5)
-m_nh.migrad()
-blh_nh.show(m_nh)
 
-# Generate and save figure for the number of photons
-title("Number of photons detected by APD")
-xlabel("Number of photons")
-ylabel("Number of events")
-savefig("n_ph.pdf")
+# <codecell>
 
-# Create a new figure
+plot(dist, en_means, 'bo');
+plot(dist, en_means, 'b-');
+xlabel("Distance of incident gamma from APD crystal face(cm)")
+ylabel("Mean deposited energy (keV)");
+savefig("length_energy.pdf")
 figure()
-# Make histogram for the energy deposit
-hist(energy_proc_uncut, bins=40, histtype='step')
-# Fit for the energy deposit
-pdf_en = Normalized(gaussian, (min(energy_proc_np), max(energy_proc_np)))
-pdf_en = Extended(pdf_en)
-blh_en = BinnedLH(pdf_en, energy_proc_np, extended=True)
-m_en = Minuit(blh_en, mean=0.5, sigma=0.05, N = norm_const, error_mean=0.1, 
-    limit_mean = (0, 100), error_sigma=0.005, limit_sigma = (0, 1000),
-    error_N = 100)
-m_en.set_up(0.5)
-m_en.migrad()
-blh_en.show(m_en)
+plot(dist, nh_means, 'bo');
+plot(dist, nh_means, 'b-');
+xlabel("Distance of incident gamma from APD crystal face (cm)")
+ylabel("Mean photons deposited")
+axis([0, 12, 100, 190])
+savefig("length_nph.pdf")
 
-# Generate and save figure for the energy deposit
-title("Energy detected by APD")
-xlabel("Energy (keV)")
-ylabel("Number of events")
-savefig("edep.pdf")'''
+# <codecell>
+
+

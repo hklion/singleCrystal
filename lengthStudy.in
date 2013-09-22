@@ -1,22 +1,22 @@
 /singCrys/PGA/pos 0 3 -4.9 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 -4.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 -3.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 -2.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 -1.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 0.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 1.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 2.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 3.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 4.0 cm
-/run/beamOn 100
+/run/beamOn 1000
 /singCrys/PGA/pos 0 3 5.0 cm
-/run/beamOn 100
+/run/beamOn 1000
