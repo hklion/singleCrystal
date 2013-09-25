@@ -289,6 +289,17 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   // Check overlaps in volumes
   G4bool checkOverlaps = config["checkOverlaps"].as<G4bool>();
 
+  // Number of APDs
+  G4int nAPD = config["nAPD"].as<G4int>();
+  // Check that there are 1 or 2 APDs specified, as these are the only
+  // quantities handled by the code.
+  if (nAPD != 1 && nAPD != 2)
+  {
+    // Output error message
+    G4cerr << "'nAPD' is not 1 or 2. Changing to 2." << G4endl;
+    nAPD = 2;
+  }
+
   // Numerical parameters
   // Crystal parameters: assumes a regular 'crysNumSides'-gonal prism
   // Length along flats
@@ -394,7 +405,6 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
     0.5 * (casingZ - epoxyZ));
   G4ThreeVector translSilicon = G4ThreeVector(0.0*mm, 0.4*mm,
     0.5 * (casingZ - siliconZ) - epoxyZ);
-
 
   // Define material strings. APD materials are hard coded, but other
   // materials are read in from the config file.
@@ -527,11 +537,31 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                            solidLayer2,
                            0,
                            translCrysAPDCase);
-  G4SubtractionSolid* solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
-                                                              solidAlAPDCaseMid,
-                                                              solidAPD,
-                                                              0,
-                                                              translAPDCase);
+
+  G4SubtractionSolid* solidAlAPDCase;
+  if (nAPD == 1)
+  {
+    solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
+                                            solidAlAPDCaseMid,
+                                            solidAPD,
+                                            0,
+                                            translAPDCase);
+  }
+  else
+  {
+    G4SubtractionSolid* solidAlAPDCaseMidAPD =
+        new G4SubtractionSolid("APDAlCaseMidAPD",
+                            solidAlAPDCaseMid,
+                            solidAPD,
+                            0,
+                            translAPDCase + G4ThreeVector(-casingX / 2, 0, 0));
+    solidAlAPDCase =
+        new G4SubtractionSolid("APDAlCase",
+                            solidAlAPDCaseMidAPD,
+                            solidAPD,
+                            0,
+                            translAPDCase + G4ThreeVector(casingX / 2, 0, 0));
+  }
   // Solids for the coatings for the APD case
   G4Polyhedra* solidAlCoating1 = new G4Polyhedra("AlCoating1",
                                                  rotation,
@@ -676,16 +706,40 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                         false,
                                                         0,
                                                         checkOverlaps);
-  // Place APD in the world volume
-  G4VPhysicalVolume* physAPD =
-    new G4PVPlacement(0,
-                      G4ThreeVector(0.0*mm, 0.0*mm, APDPlaceZ),
-                      logicAPD,
-                      "APD",
-                      logicWorld,
-                      false,
-                      0,
-                      checkOverlaps);
+  // Place APD(s) in the world volume
+  if (nAPD == 1)
+  {
+    G4VPhysicalVolume* physAPD =
+        new G4PVPlacement(0,
+                          G4ThreeVector(0.0*mm, 0.0*mm, APDPlaceZ),
+                          logicAPD,
+                          "APD",
+                          logicWorld,
+                          false,
+                          0,
+                          checkOverlaps);
+  }
+  else if (nAPD == 2)
+  {
+    G4VPhysicalVolume* physAPD1 =
+        new G4PVPlacement(0,
+                          G4ThreeVector(-casingX / 2, 0.0*mm, APDPlaceZ),
+                          logicAPD,
+                          "APD",
+                          logicWorld,
+                          false,
+                          0,
+                          checkOverlaps);
+    G4VPhysicalVolume* physAPD2 =
+        new G4PVPlacement(0,
+                          G4ThreeVector(casingX / 2, 0.0*mm, APDPlaceZ),
+                          logicAPD,
+                          "APD",
+                          logicWorld,
+                          false,
+                          1,
+                          checkOverlaps);
+  }
   // Place Al APD case in the world volume.
   G4VPhysicalVolume* physAlAPDCase =
     new G4PVPlacement(0,

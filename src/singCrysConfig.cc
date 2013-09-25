@@ -58,6 +58,8 @@ singCrysConfig::singCrysConfig()
       "Thickness of Al APD case (mm)")
     ("APDSlotDepth", po::value<G4double>()->default_value(5.),
       "How much of the crystal is in the Al case (mm)")
+    ("nAPD", po::value<G4int>()->default_value(2),
+      "Number of APDs")
     // Materials
     ("crysMat", po::value<std::string>()->default_value("LYSO"),
       "Crystal material")
