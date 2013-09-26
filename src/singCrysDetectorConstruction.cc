@@ -314,7 +314,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
   G4double AlCoating1Z = config["AlCoating1Z"].as<G4double>();
   // Thickness of botom Al APD case coating
   G4double AlCoating2Z = config["AlCoating2Z"].as<G4double>();
-  // Parameters for APD
+  // Parameters for APD. All APDs are identical.
   // XY dimension of silicon APD chip
   G4double siliconXY = config["siliconXY"].as<G4double>();
   // Thickness of silicon APD chip
@@ -531,14 +531,16 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                                     APDAlCaseZPlaneCoords,
                                                     crysRInner,
                                                     APDAlCaseROuter);
+  // Subtract the crystal from the APD case.
   G4SubtractionSolid* solidAlAPDCaseMid =
     new G4SubtractionSolid("AlAPDCaseMid",
                            solidAlAPDCaseFull,
                            solidLayer2,
                            0,
                            translCrysAPDCase);
-
+  // Subtract the APD(s) from the aluminum case.
   G4SubtractionSolid* solidAlAPDCase;
+  // If one APD, subtract it centered in the aluminum case
   if (nAPD == 1)
   {
     solidAlAPDCase = new G4SubtractionSolid("AlAPDCase",
@@ -547,6 +549,7 @@ G4VPhysicalVolume* singCrysDetectorConstruction::Construct()
                                             0,
                                             translAPDCase);
   }
+  // If two APDs, subtract two of them.
   else
   {
     G4SubtractionSolid* solidAlAPDCaseMidAPD =

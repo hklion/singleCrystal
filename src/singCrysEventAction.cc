@@ -44,8 +44,8 @@ singCrysEventAction::singCrysEventAction()
   // Get the analysis manager  
   singCrysAIDAManager* analysisManager =
       singCrysAIDAManager::getInstance();
-  // Create a Tuple. It contains the event number, the index of the deposit,
-  // and the energy of the deposit. 
+  // Create a Tuple. It contains the event number, the index of the APD, the
+  // index of the deposit, and the energy of the deposit. 
   ITupleFactory* tFactory = analysisManager->getTupleFactory();
   if (tFactory)
   {
@@ -137,8 +137,8 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
         if (eDep > 0.)
         {
           fTuple->fill(0, evtID);
-          fTuple->fill(1, hitID);
-          fTuple->fill(2, APDNb);
+          fTuple->fill(1, APDNb);
+          fTuple->fill(2, hitID);
           fTuple->fill(3, eDep);
           fTuple->fill(4, position.x());
           fTuple->fill(5, position.y());

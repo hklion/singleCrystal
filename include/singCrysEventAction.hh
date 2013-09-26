@@ -37,15 +37,20 @@ class singCrysEventActionMessenger;
  * ROOT will be excluded using a preprocessor directive. Similar exclusion
  * is done for AIDA.
  *
- * The ROOT analysis outputs a ROOT file with two branches: event ID (int) and
- * energy (std::vector). The event ID is the ID used by GEANT, starts at 0 and
- * is incremented by one for each event. The energy vector is a vector
- * containing the amount of energy deposited by each hit of a given event.
+ * The ROOT analysis outputs a ROOT file with branches for the event ID (int),
+ * as well as momentum (x,y,z), position (x,y,z), and energy, all std::vector.
+ * The event ID is the ID used by GEANT, starts at 0 and is incremented by one
+ * for each event. The energy vector is a vector containing the amount of
+ * energy deposited by each hit of a given event. The momentum and position
+ * components correspond to the position and momentum 3-vectors of the hits. 
  *
- * The AIDA analysis outputs a fle with three branches: event ID (int),
- * deposit ID (int), and energy (double). The event ID is determined as in the
+ * The AIDA analysis outputs a fle with branches for the event ID (int),
+ * deposit ID (int), APDID (int), energy, momentum position (x,y,z), and
+ * momentum (x,y,z) (all double). The event ID is determined as in the
  * ROOT analysis. The deposit ID is the index of the hit in the hits
- * collection. The deposit energy is the energy deposited by that hit.
+ * collection. The deposit energy is the energy deposited by that hit. The
+ * momentum and position vector components correspond to the three-vector
+ * components of the hits.
  */
 class singCrysEventAction : public G4UserEventAction
 {
