@@ -45,11 +45,12 @@ G4bool singCrysSiliconSD::ProcessHits(G4Step* aStep,
   // energy deposit
   G4double edep = aStep->GetTotalEnergyDeposit();
   if (edep == 0.) return false;
-  // Define a new hit and pass it the appropriate values
+  // Define a new hit and pass it the appropriate values. Argument in
+  // 'GetCopyNumber' specifies the mother volume.
   singCrysSiliconHit* newHit = new singCrysSiliconHit();
   newHit->SetTrackID (aStep->GetTrack()->GetTrackID());
   newHit->SetAPDNb(aStep->GetPreStepPoint()->GetTouchableHandle()
-                                           ->GetCopyNumber());
+                                           ->GetCopyNumber(1));
   newHit->SetEdep(edep);
   newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
   newHit->SetPVec(aStep->GetTrack()->GetMomentum());

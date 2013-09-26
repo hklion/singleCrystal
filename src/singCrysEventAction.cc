@@ -50,7 +50,7 @@ singCrysEventAction::singCrysEventAction()
   if (tFactory)
   {
     fTuple = tFactory->
-    create("MyTuple","MyTuple","int eventNumber, iDeposit, double Energy, xPos, yPos, zPos, xMomentum, yMomentum, zMomentum","");
+    create("MyTuple","MyTuple","int eventNumber, APDID, iDeposit, double Energy, xPos, yPos, zPos, xMomentum, yMomentum, zMomentum","");
   }
 #endif // AIDA_USE
 
@@ -59,8 +59,10 @@ singCrysEventAction::singCrysEventAction()
   G4String rootOutfile = (G4String) config["rootOutfile"].as<std::string>();
   myFile = new TFile(rootOutfile, "recreate");
   myTree = new TTree("ntp1", "Tree with vectors");
-  // Create branches, one for the event ID, and one for the energy of the hits
+  // Create branches, one for the event and APD ID, and one for the energy of
+  // the hits
   myTree->Branch("eventID", &eventID);
+  myTree->Branch("APDID", &APDID);
   myTree->Branch("energy", &energy);
   myTree->Branch("xPos", &xPos);
   myTree->Branch("yPos", &yPos);
@@ -128,6 +130,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
         // If there is a nonzero energy deposit, store information about the
         // hit in the tuple. 
         singCrysSiliconHit* hit = (*SiHC)[i];
+        G4int APDNb = hit->GetAPDNb();
         G4double eDep = hit->GetEdep();
         G4ThreeVector position = hit->GetPos();
         G4ThreeVector momentum = hit->GetPVec();
@@ -135,13 +138,14 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
         {
           fTuple->fill(0, evtID);
           fTuple->fill(1, hitID);
-          fTuple->fill(2, eDep);
-          fTuple->fill(3, position.x());
-          fTuple->fill(4, position.y());
-          fTuple->fill(5, position.z());
-          fTuple->fill(6, momentum.x());
-          fTuple->fill(7, momentum.y());
-          fTuple->fill(8, momentum.z());
+          fTuple->fill(2, APDNb);
+          fTuple->fill(3, eDep);
+          fTuple->fill(4, position.x());
+          fTuple->fill(5, position.y());
+          fTuple->fill(6, position.z());
+          fTuple->fill(7, momentum.x());
+          fTuple->fill(8, momentum.y());
+          fTuple->fill(9, momentum.z());
           fTuple->addRow();
           hitID++;
         }
@@ -151,6 +155,7 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
 #endif // AIDA_USE
   
 #ifdef ROOT_USE
+  APDID.clear();
   energy.clear();
   xPos.clear();
   yPos.clear();
@@ -170,11 +175,13 @@ void singCrysEventAction::EndOfEventAction(const G4Event* evt)
       // Get the energy deposit from the hit. If it is nonzero, store
       // the data in the appropriate vectors, to be added to the file.
       singCrysSiliconHit* hit = (*SiHC)[i];
+      G4int APDNb = hit->GetAPDNb();
       G4double eDep = hit->GetEdep();
       G4ThreeVector position = hit->GetPos();
       G4ThreeVector momentum = hit->GetPVec();
       if (eDep > 0.)
       {
+        APDID.push_back(APDNb);
         energy.push_back(eDep);
         xPos.push_back(position.x());
         yPos.push_back(position.y());

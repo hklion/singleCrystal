@@ -89,6 +89,8 @@ class singCrysEventAction : public G4UserEventAction
     TTree *myTree;
     //! ID number of the event 
     G4int eventID;
+    //! Vector to store APD ID quantities
+    std::vector<double> APDID;
     //! Vector to store energies of hits
     std::vector<double> energy;
     //! Vector to store x position of hits
